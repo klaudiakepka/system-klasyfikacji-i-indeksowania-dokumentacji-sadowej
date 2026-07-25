@@ -1,0 +1,13 @@
+dokument:
+
+* nazwa			VARCHAR(100), NOT NULL, UNIQUE,
+* sygnatura akt		VARCHAR(40), NOT NULL,
+* typ			VARCHAR(), 
+* data wydania		DATE, 
+* strona skarżąca	VARCHAR(100), 
+* strona przeciwna	VARCHAR(100), 
+* nazwa sądu		VARCHAR(100), 
+* opis			TEXT(), 
+* załączniki		BOOLEAN, NOT NULL, 
+* flaga			BOOLEAN, NOT NULL, DEFAULT[0],
+
