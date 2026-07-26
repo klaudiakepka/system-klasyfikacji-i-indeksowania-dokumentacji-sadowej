@@ -36,8 +36,8 @@ except Exception as e:
 root.grid_columnconfigure(1, weight=1)
 root.grid_rowconfigure(1, weight=1)
 
-buttonFrame = tk.Frame(root, pady=10, padx=20)
-rightFrame = tk.Frame(root, bg='lightgreen', pady=10, padx=30)
+buttonFrame = tk.Frame(root, pady=10, padx=20, bg="lightpink")
+rightFrame = tk.Frame(root, bg='lightgreen', pady=10)
 leftFrame = tk.Frame(root, bg='lightblue', width=200)
 
 buttonFrame.grid(row=0, column=1, sticky='nsew')
@@ -58,21 +58,17 @@ searchFrame.pack(side='left')
 searchEntry.pack(side='right')
 searchButton.pack(side='left')
 
-canvas = tk.Canvas(rightFrame)
+canvas = tk.Canvas(rightFrame, highlightthickness=0, bg="lightgreen")
 scrollbar = tk.Scrollbar(rightFrame, orient="vertical", command=canvas.yview)
-listFrame = tk.Frame(canvas, bg="pink")
+listFrame = tk.Frame(canvas, bg="lightgreen")
 
-scrollbar.pack(side="right", fill='y')
-canvas.pack(fill="both", expand=True)
+scrollbar.pack(side="right", fill='y', padx=(0,5))
+canvas.pack(fill="both", expand=True, padx=(20,20))
 canvas.configure(yscrollcommand=scrollbar.set)
 
-listFrame.bind(
-        "<Configure>",
-        lambda e: canvas.configure(
-            scrollregion=canvas.bbox("all")
-        )
-    )
-canvas.create_window((0, 0), window=listFrame, anchor="nw")
+list_id = canvas.create_window((0, 0), window=listFrame, anchor="nw")
+listFrame.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+canvas.bind("<Configure>", lambda e: canvas.itemconfig(list_id, width=e.width))
 
 doc_list = {}
 update_data(doc_list)

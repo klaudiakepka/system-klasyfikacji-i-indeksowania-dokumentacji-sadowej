@@ -17,4 +17,4 @@ class Document:
         block = tk.Frame(parent_name)
         name = tk.Label(block, text=self.name)
         block.pack(fill='x', pady=(10, 0))
-        name.pack(side="left")
+        name.pack(side="left", pady=5)
