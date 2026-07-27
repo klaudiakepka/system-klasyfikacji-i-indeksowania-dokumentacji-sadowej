@@ -2,9 +2,10 @@ import tkinter as tk
 import sqlite3
 from Document import Document
 
-connection = sqlite3.connect("./data/data.db")
-cursor = connection.cursor()
-cursor.execute("""
+try:
+    connection = sqlite3.connect("./data/data.db")
+    cursor = connection.cursor()
+    cursor.execute("""
             CREATE TABLE IF NOT EXISTS documents (
                 name VARCHAR(100) NOT NULL UNIQUE PRIMARY KEY,
                 syg_akt VARCHAR(40) NOT NULL,
@@ -17,6 +18,8 @@ cursor.execute("""
                 attached BOOLEAN NOT NULL DEFAULT 0,
                 flag BOOLEAN NOT NULL DEFAULT 0
             );""")
+except sqlite3.Error as e:
+    print("database error")
 
 def update_data(list):
     list.clear()

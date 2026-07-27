@@ -1,4 +1,16 @@
 import tkinter as tk
+import sqlite3
+
+def db_query(query, param=None):
+    try:
+        connection = sqlite3.connect("./data/data.db")
+        cursor = connection.cursor()
+        cursor.execute(query, param)
+        connection.commit()
+        connection.close()
+    except sqlite3.Error as e:
+        print("database error")
+
 
 class Document:
     def __init__(self, row):
@@ -13,8 +25,25 @@ class Document:
         self.attached = row[8]
         self.flag = row[9]
 
+        self.block = None
+
     def doc_block(self,parent_name):
-        block = tk.Frame(parent_name)
-        name = tk.Label(block, text=self.name)
-        block.pack(fill='x', pady=(10, 0))
+        def toggle_flag():
+            self.flag = not self.flag
+            new_color = "red" if self.flag else "grey"
+            flag_button.config(fg=new_color)
+            db_query("UPDATE documents SET flag=? WHERE name=?", (self.flag, self.name))
+
+        self.block = tk.Frame(parent_name)
+        name = tk.Label(self.block, text=self.name)
+        color = "red" if self.flag else "grey"
+        flag_button = tk.Button(self.block, text="⚑", font=("Arial", 12), fg=color, bd=0, relief="flat", command=toggle_flag)
+
+        self.block.pack(fill='x', pady=(10, 0))
         name.pack(side="left", pady=5)
+        flag_button.pack(side="right")
+
+    def destroy(self):
+        if self.block:
+            self.block.destroy()
+            db_query("DELETE FROM documents WHERE name=?", (self.name,))
