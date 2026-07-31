@@ -1,7 +1,7 @@
 import tkinter as tk
 import sqlite3
 
-def db_query(query, param=None):
+def _db_query(query, param=None):
     try:
         connection = sqlite3.connect("./data/data.db")
         cursor = connection.cursor()
@@ -10,7 +10,6 @@ def db_query(query, param=None):
         connection.close()
     except sqlite3.Error as e:
         print("database error")
-
 
 class Document:
     def __init__(self, row):
@@ -26,24 +25,32 @@ class Document:
         self.flag = row[9]
 
         self.block = None
+        self.state = tk.BooleanVar()
 
     def doc_block(self,parent_name):
-        def toggle_flag():
+        def __toggle_flag():
             self.flag = not self.flag
             new_color = "red" if self.flag else "grey"
             flag_button.config(fg=new_color)
-            db_query("UPDATE documents SET flag=? WHERE name=?", (self.flag, self.name))
+            _db_query("UPDATE documents SET flag=? WHERE name=?", (self.flag, self.name))
 
         self.block = tk.Frame(parent_name)
         name = tk.Label(self.block, text=self.name)
+        checkbox = tk.Checkbutton(self.block, variable=self.state)
         color = "red" if self.flag else "grey"
-        flag_button = tk.Button(self.block, text="⚑", font=("Arial", 12), fg=color, bd=0, relief="flat", command=toggle_flag)
+        flag_button = tk.Button(self.block, text="⚑", font=("Arial", 12), fg=color, bd=0, relief="flat", command=__toggle_flag)
 
         self.block.pack(fill='x', pady=(10, 0))
         name.pack(side="left", pady=5)
+        checkbox.pack(side="right")
         flag_button.pack(side="right")
+        return self.block
+
+    def selected(self):
+        return self.state.get()
 
     def destroy(self):
         if self.block:
             self.block.destroy()
-            db_query("DELETE FROM documents WHERE name=?", (self.name,))
+            _db_query("DELETE FROM documents WHERE name=?", (self.name,))
+            return self.name
