@@ -1,4 +1,6 @@
 import tkinter as tk
+from tkinter import ttk
+from tkcalendar import DateEntry
 import sqlite3
 from Document import Document
 
@@ -21,7 +23,7 @@ try:
 except sqlite3.Error:
     print("database error")
 
-def update_data(new_list):
+def read_data(new_list):
     new_list.clear()
     try:
         cursor.execute("SELECT * FROM documents")
@@ -33,6 +35,7 @@ def update_data(new_list):
 
 root = tk.Tk()
 root.geometry("1000x600+200+100")
+root.bind_all("<Button-1>", lambda e: None if isinstance(e.widget, tk.Entry) else root.focus())
 
 try:
     searchIcon = tk.PhotoImage(file="searchIcon.png")
@@ -64,21 +67,91 @@ search_frame.pack(side='left')
 search_entry.pack(side='right')
 search_button.pack(side='left')
 
-left_canvas = tk.Canvas(left_frame, highlightthickness=0, bg="blue")
+left_canvas = tk.Canvas(left_frame, highlightthickness=0, bg="lightblue")
 filter_frame = tk.Frame(left_canvas, bg="lightblue")
 
-left_canvas.pack(pady=20, padx=20, fill="both", expand=True)
+left_canvas.pack(pady=20, padx=(10,0), fill="both", expand=True)
 left_canvas.create_window(0,0, window=filter_frame, anchor="nw")
 filter_frame.bind("<Configure>", lambda e: left_canvas.config(width=e.width))
 
+def filter_section(parent, title):
+    def toggle_visibility():
+        if content.winfo_ismapped():
+            content.pack_forget()
+            header.config(text=f"▶ {title}")
+        else:
+            content.pack(anchor="w", padx=(20,0), pady=(5,0), after=header)
+            header.config(text=f"▼ {title}")
 
+    header = tk.Button(parent, text=f"▶ {title}", width=30, anchor="w",
+                       borderwidth=0, bg="lightblue",
+                       activebackground="lightblue",
+                       command=toggle_visibility)
+    header.pack()
+    ttk.Separator(parent, orient="horizontal").pack(fill='x', padx=10, pady=5)
+    content = tk.Frame(parent, bg="lightblue")
+    return content
 
+flag_filter = filter_section(filter_frame, "flag")
+flag_yes = tk.Checkbutton(flag_filter, text="Tak", bg="lightblue", borderwidth=0)
+flag_no = tk.Checkbutton(flag_filter, text="Nie", bg="lightblue", borderwidth=0)
+flag_yes.pack()
+flag_no.pack()
 
+att_filter = filter_section(filter_frame, "attachments")
+att_yes = tk.Checkbutton(att_filter, text="Tak", bg="lightblue", borderwidth=0)
+att_no = tk.Checkbutton(att_filter, text="Nie", bg="lightblue", borderwidth=0)
+att_yes.pack()
+att_no.pack()
 
+def clear_date():
+    start_date.config(state='normal')
+    start_date.delete(0, 'end')
+    start_date.config(state='readonly')
+
+    end_date.config(state='normal')
+    end_date.delete(0, 'end')
+    end_date.config(state='readonly')
+
+date_filter = filter_section(filter_frame, "data")
+date_input_block = tk.Frame(date_filter, bg="lightblue")
+start_date = DateEntry(date_input_block, width=9,
+                       font=('Inter', 8),
+                       locale='pl_PL',
+                       showweeknumbers=False,
+                       showothermonthdays=False,
+                       state="readonly",
+                       takefocus=0)
+end_date = DateEntry(date_input_block, width=9,
+                     font=('Helvetica', 8),
+                     locale='pl_PL',
+                     showweeknumbers=False,
+                     showothermonthdays=False,
+                     state="readonly")
+spacing = tk.Label(date_input_block, text='-', bg="lightblue")
+clear_button = tk.Button(date_filter, text="clear", command=clear_date)
+date_input_block.pack(expand=True)
+start_date.pack(side="left")
+spacing.pack(side="left")
+end_date.pack(side="left")
+clear_button.pack(anchor='w', pady=(5,0), padx=5)
+clear_date()
+
+court_filter = filter_section(filter_frame, "sąd")
+court_search = tk.Entry(court_filter)
+court_search.pack()
+
+side_filter = filter_section(filter_frame, "strona sporu")
+side_search = tk.Entry(side_filter)
+side_search.pack()
+
+type_filter = filter_section(filter_frame, "typ")
+type_search = tk.Entry(type_filter)
+type_search.pack()
 
 right_canvas = tk.Canvas(right_frame, highlightthickness=0, bg="lightgreen")
 right_scrollbar = tk.Scrollbar(right_frame, orient="vertical", command=right_canvas.yview)
-list_frame = tk.Frame(right_canvas, bg="lightgreen")
+list_frame = tk.Frame(right_canvas)
 
 right_scrollbar.pack(side="right", fill='y', padx=(0, 5))
 right_canvas.pack(fill="both", expand=True, padx=20)
@@ -88,7 +161,7 @@ list_frame.bind("<Configure>", lambda e: right_canvas.configure(scrollregion=rig
 right_canvas.bind("<Configure>", lambda e: right_canvas.itemconfig(list_id, width=e.width))
 
 doc_list = {}
-update_data(doc_list)
+read_data(doc_list)
 for doc in doc_list:
     doc_list[doc].doc_block(list_frame)
 

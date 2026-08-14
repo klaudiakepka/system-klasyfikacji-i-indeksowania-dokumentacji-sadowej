@@ -19,7 +19,7 @@ class Document:
         self.date = row[3]
         self.skarzacy = row[4]
         self.przeciwny = row[5]
-        self.sad =  row[6]
+        self.court =  row[6]
         self.desc = row[7]
         self.attached = row[8]
         self.flag = row[9]
@@ -54,3 +54,21 @@ class Document:
             self.block.destroy()
             _db_query("DELETE FROM documents WHERE name=?", (self.name,))
             return self.name
+
+    def get_flag(self):
+        return self.flag
+
+    def get_attached(self):
+        return self.attached
+
+    def get_date(self):
+        return self.date
+
+    def get_court(self):
+        return self.court
+
+    def get_sides(self):
+        return [self.skarzacy, self.przeciwny]
+
+    def get_type(self):
+        return self.type

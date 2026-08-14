@@ -1,0 +1,6 @@
+flaga 	 	on/off
+załączniki  	on/off
+data		od do
+sąd		wpisywanie z propozycjami
+strony		wpisywanie z propozycjami
+typ		wpisywanie z propozycjami
