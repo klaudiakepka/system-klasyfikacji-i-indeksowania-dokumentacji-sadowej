@@ -5,6 +5,11 @@ import sqlite3
 from Document import Document
 from AutoEntry import AutoEntry
 
+courts = []
+sides = []
+types = []
+data = ""
+
 try:
     connection = sqlite3.connect("./data/data.db")
     cursor = connection.cursor()
@@ -21,18 +26,25 @@ try:
                 attached BOOLEAN NOT NULL DEFAULT 0,
                 flag BOOLEAN NOT NULL DEFAULT 0
             );""")
+
+    cursor.execute("SELECT DISTINCT sad FROM documents")
+    courts_raw = cursor.fetchall()
+    courts = [row[0] for row in courts_raw]
+
+    cursor.execute("""SELECT DISTINCT skarzacy FROM documents UNION SELECT DISTINCT przeciwny FROM documents""")
+    sides_raw = cursor.fetchall()
+    sides = [row[0] for row in sides_raw]
+
+    cursor.execute("SELECT DISTINCT type FROM documents")
+    types_raw = cursor.fetchall()
+    types = [row[0] for row in types_raw]
+
+    cursor.execute("SELECT * FROM documents")
+    data = cursor.fetchall()
+
+    connection.close()
 except sqlite3.Error:
     print("database error")
-
-def read_data(new_list):
-    new_list.clear()
-    try:
-        cursor.execute("SELECT * FROM documents")
-        rows = cursor.fetchall()
-        for row in rows:
-            new_list[row[0]] = Document(row)
-    except sqlite3.Error:
-        print("database error")
 
 root = tk.Tk()
 root.geometry("1000x600+200+100")
@@ -118,35 +130,14 @@ clear_button.pack(anchor='w', pady=(5,0), padx=5)
 clear_date()
 
 court_filter = filter_section(filter_frame, "sąd")
-courts = []
-try:
-    cursor.execute("SELECT DISTINCT sad FROM documents")
-    courts_raw = cursor.fetchall()
-    courts = [row[0] for row in courts_raw]
-except:
-    print("database error")
 court_search = AutoEntry(court_filter, courts)
 court_search.pack()
 
 side_filter = filter_section(filter_frame, "strona sporu")
-sides = []
-try:
-    cursor.execute("""SELECT DISTINCT skarzacy FROM documents UNION SELECT DISTINCT przeciwny FROM documents""")
-    sides_raw = cursor.fetchall()
-    sides = [row[0] for row in sides_raw]
-except:
-    print("database error")
 side_search = AutoEntry(side_filter, sides)
 side_search.pack()
 
 type_filter = filter_section(filter_frame, "typ")
-types = []
-try:
-    cursor.execute("SELECT DISTINCT type FROM documents")
-    types_raw = cursor.fetchall()
-    types = [row[0] for row in types_raw]
-except:
-    print("database error")
 type_search = AutoEntry(type_filter, types)
 type_search.pack()
 
@@ -161,11 +152,13 @@ list_frame.bind("<Configure>", lambda e: right_canvas.configure(scrollregion=rig
 right_canvas.bind("<Configure>", lambda e: right_canvas.itemconfig(list_id, width=e.width))
 
 doc_list = {}
-read_data(doc_list)
+for row in data:
+    doc_list[row[0]] = Document(row)
 for doc in doc_list:
     doc_list[doc].doc_block(list_frame)
 
 def remove():
+    global doc
     removed = []
     for doc in doc_list:
         if doc_list[doc].selected():
