@@ -3,6 +3,7 @@ from tkinter import ttk
 from tkcalendar import DateEntry
 import sqlite3
 from Document import Document
+from AutoEntry import AutoEntry
 
 try:
     connection = sqlite3.connect("./data/data.db")
@@ -138,15 +139,37 @@ clear_button.pack(anchor='w', pady=(5,0), padx=5)
 clear_date()
 
 court_filter = filter_section(filter_frame, "sąd")
-court_search = tk.Entry(court_filter)
+courts = []
+try:
+    cursor.execute("SELECT DISTINCT sad FROM documents")
+    courts_raw = cursor.fetchall()
+    courts = [row[0] for row in courts_raw]
+except:
+    print("database error")
+court_search = AutoEntry(court_filter, courts)
 court_search.pack()
 
 side_filter = filter_section(filter_frame, "strona sporu")
-side_search = tk.Entry(side_filter)
+sides = []
+try:
+    cursor.execute("""SELECT DISTINCT skarzacy FROM documents
+                   UNION SELECT DISTINCT przeciwny FROM documents""")
+    sides_raw = cursor.fetchall()
+    sides = [row[0] for row in sides_raw]
+except:
+    print("database error")
+side_search = AutoEntry(side_filter, sides)
 side_search.pack()
 
 type_filter = filter_section(filter_frame, "typ")
-type_search = tk.Entry(type_filter)
+types = []
+try:
+    cursor.execute("SELECT DISTINCT type FROM documents")
+    types_raw = cursor.fetchall()
+    types = [row[0] for row in types_raw]
+except:
+    print("database error")
+type_search = AutoEntry(type_filter, types)
 type_search.pack()
 
 right_canvas = tk.Canvas(right_frame, highlightthickness=0, bg="lightgreen")
