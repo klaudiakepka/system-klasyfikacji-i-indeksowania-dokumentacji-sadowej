@@ -54,21 +54,3 @@ class Document:
             self.block.destroy()
             _db_query("DELETE FROM documents WHERE name=?", (self.name,))
             return self.name
-
-    def get_flag(self):
-        return self.flag
-
-    def get_attached(self):
-        return self.attached
-
-    def get_date(self):
-        return self.date
-
-    def get_court(self):
-        return self.court
-
-    def get_sides(self):
-        return [self.skarzacy, self.przeciwny]
-
-    def get_type(self):
-        return self.type
