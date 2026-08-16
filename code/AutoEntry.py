@@ -5,23 +5,23 @@ class AutoEntry(tk.Entry):
         super().__init__(master, **kwargs)
 
         self.suggestions = suggestions or []
-        self.max = 5
+        self.max_results = 5
         self.on_select = on_select
         self.popup = None
         self.listbox = None
 
         self.bind("<KeyRelease>", self._key_release)
-        self.bind("<FocusOut>", lambda e: self.after(100, self._try_hide))
         self.bind("<Escape>", lambda e: self._hide())
         self.bind("<Down>", self._on_down)
-        self.bind("<Return>", self._select)
+        self.bind("<Return>", self._on_return)
+        self.bind_all("<Button-1>", self._on_click, add="+")
 
     def _get_matches(self, text):
         if not text:
             return []
-        text_lower = text.lower()
-        matches = [s for s in self.suggestions if text_lower in s.lower()]
-        return matches[: self.max]
+        text = text.lower()
+        matches = [s for s in self.suggestions if text in s.lower()]
+        return matches[: self.max_results]
 
     def _key_release(self, event):
         if event.keysym in ("Up", "Down", "Return", "Escape"):
@@ -39,6 +39,9 @@ class AutoEntry(tk.Entry):
             self.listbox.focus_set()
             self.listbox.selection_set(0)
 
+    def _on_return(self, event):
+        self._select()
+
     def _show(self, matches):
         if self.popup is None:
             self.popup = tk.Toplevel(self)
@@ -47,7 +50,7 @@ class AutoEntry(tk.Entry):
 
             scroll = tk.Scrollbar(self.popup, orient="horizontal")
             scroll.pack(side="bottom", fill="x")
-            self.listbox = tk.Listbox(self.popup, height=min(self.max, 8), xscrollcommand=scroll.set)
+            self.listbox = tk.Listbox(self.popup, height=min(self.max_results, 8), xscrollcommand=scroll.set)
             self.listbox.pack(fill="both", expand=True)
             scroll.config(command=self.listbox.xview)
 
@@ -67,10 +70,18 @@ class AutoEntry(tk.Entry):
 
         self.popup.deiconify()
 
-    def _try_hide(self):
-        focused = self.focus_get()
-        if self.popup and focused and not str(focused).startswith(str(self.popup)):
-            self._hide()
+    def _on_click(self, event):
+        if not self.popup:
+            return
+        widget = event.widget
+        if widget is self:
+            return
+        w = widget
+        while w is not None:
+            if w == self.popup:
+                return
+            w = w.master
+        self._hide()
 
     def _hide(self):
         if self.popup is not None:
@@ -78,13 +89,13 @@ class AutoEntry(tk.Entry):
             self.popup = None
             self.listbox = None
 
-    def _select(self, event):
+    def _select(self, event=None):
         if self.listbox:
             sel = self.listbox.curselection()
             if sel:
-                self._select_item(self.listbox.get(sel[0]))
+                self._choose(self.listbox.get(sel[0]))
 
-    def _select_item(self, value):
+    def _choose(self, value):
         self.delete(0, tk.END)
         self.insert(0, value)
         self._hide()

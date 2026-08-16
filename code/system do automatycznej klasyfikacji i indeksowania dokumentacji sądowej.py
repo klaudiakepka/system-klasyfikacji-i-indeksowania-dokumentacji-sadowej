@@ -69,7 +69,7 @@ add_button.pack(side='right', padx=(10, 0))
 remove_button.pack(side='right', padx=(0, 10))
 search_frame.pack(side='left')
 search_entry.pack(side='right')
-search_button.pack(side='left')
+search_button.pack()
 
 left_canvas = tk.Canvas(left_frame, highlightthickness=0, bg="lightblue")
 filter_frame = tk.Frame(left_canvas, bg="lightblue")
@@ -115,14 +115,14 @@ def clear_date():
     end_date.config(state='readonly')
 
 date_filter = filter_section(filter_frame, "data")
-date_input_block = tk.Frame(date_filter, bg="lightblue")
-start_date = DateEntry(date_input_block, width=9, font=('Inter', 8), locale='pl_PL', showweeknumbers=False,
+input_block = tk.Frame(date_filter, bg="lightblue")
+start_date = DateEntry(input_block, width=9, font=('Inter', 8), locale='pl_PL', showweeknumbers=False,
                        showothermonthdays=False, state="readonly")
-end_date = DateEntry(date_input_block, width=9, font=('Helvetica', 8), locale='pl_PL', showweeknumbers=False,
+end_date = DateEntry(input_block, width=9, font=('Helvetica', 8), locale='pl_PL', showweeknumbers=False,
                      showothermonthdays=False, state="readonly")
-spacing = tk.Label(date_input_block, text='-', bg="lightblue")
+spacing = tk.Label(input_block, text='-', bg="lightblue")
 clear_button = tk.Button(date_filter, text="clear", command=clear_date)
-date_input_block.pack(expand=True)
+input_block.pack(expand=True)
 start_date.pack(side="left")
 spacing.pack(side="left")
 end_date.pack(side="left")
