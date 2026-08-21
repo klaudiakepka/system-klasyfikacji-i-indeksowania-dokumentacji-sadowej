@@ -59,7 +59,11 @@ top_frame.grid(row=0, column=1, sticky='nsew')
 top_frame.grid_rowconfigure(0, weight=1)
 top_frame.grid_columnconfigure(0, weight=1)
 right_frame.grid(row=1, column=1, sticky='nsew')
+right_frame.grid_rowconfigure(0, weight=1)
+right_frame.grid_columnconfigure(0, weight=1)
 left_frame.grid(row=1, column=0, sticky='nsew')
+left_frame.grid_rowconfigure(0, weight=1)
+left_frame.grid_columnconfigure(0, weight=1)
 
 def view(name):
     if name == "main":
@@ -68,12 +72,25 @@ def view(name):
         top_frame.grid(column=0, columnspan=2)
 
     tk.Misc.tkraise(top_block[name])
+    tk.Misc.tkraise(left_block[name])
+    tk.Misc.tkraise(right_block[name])
 
-top_block = {}
+top_block, left_block, right_block = {}, {}, {}
+
+
+
+def remove():
+    global doc
+    removed = []
+    for doc in doc_list:
+        if doc_list[doc].selected():
+            removed.append(doc_list[doc].destroy())
+    for name in removed:
+        del doc_list[name]
 
 main_top = tk.Frame(top_frame, bg="lightpink")
 new_button = tk.Button(main_top, text="new", width=10, command=lambda n="add": view(n))
-remove_button_m = tk.Button(main_top, text='remove', width=10)
+remove_button_m = tk.Button(main_top, text='remove', width=10, command=remove)
 search_frame = tk.Frame(main_top, bg='white')
 search_entry = tk.Entry(search_frame, width=20, bd=0)
 search_button = tk.Button(search_frame, bd=0, bg='white', text='🔍')
@@ -107,13 +124,11 @@ top_block["edit"] = edit_top
 
 
 
-
-
-left_canvas = tk.Canvas(left_frame, highlightthickness=0, bg="lightblue")
-filter_frame = tk.Frame(left_canvas, bg="lightblue")
-left_canvas.pack(pady=20, padx=(10,0), fill="both", expand=True)
-left_canvas.create_window(0,0, window=filter_frame, anchor="nw")
-filter_frame.bind("<Configure>", lambda e: left_canvas.config(width=e.width))
+main_left = tk.Canvas(left_frame, highlightthickness=0, bg="lightblue")
+filter_frame = tk.Frame(main_left, bg="lightblue")
+main_left.grid(row=0, column=0, sticky="nesw", pady=20, padx=(10, 0))
+main_left.create_window(0, 0, window=filter_frame, anchor="nw")
+filter_frame.bind("<Configure>", lambda e: main_left.config(width=e.width))
 
 def filter_section(parent, title):
     def toggle_visibility():
@@ -178,10 +193,23 @@ side_search.pack()
 type_filter = filter_section(filter_frame, "typ")
 type_search = AutoEntry(type_filter, types)
 type_search.pack()
+left_block["main"] = main_left
 
-right_canvas = tk.Canvas(right_frame, highlightthickness=0, bg="lightgreen")
-right_scrollbar = tk.Scrollbar(right_frame, orient="vertical", command=right_canvas.yview)
+add_left = tk.Frame(left_frame, bg="lightblue")
+add_left.grid(row=0, column=0, sticky="nesw")
+left_block["add"] = add_left
+
+edit_left = tk.Frame(left_frame, bg="lightblue")
+edit_left.grid(row=0, column=0, sticky="nesw")
+left_block["edit"] = edit_left
+
+
+
+main_right = tk.Frame(right_frame, bg="lightgreen")
+right_canvas = tk.Canvas(main_right, highlightthickness=0, bg="lightgreen")
+right_scrollbar = tk.Scrollbar(main_right, orient="vertical", command=right_canvas.yview)
 list_frame = tk.Frame(right_canvas)
+main_right.grid(row=0, column=0, sticky="nsew")
 right_scrollbar.pack(side="right", fill='y', padx=(0, 5))
 right_canvas.pack(fill="both", expand=True, padx=20)
 right_canvas.configure(yscrollcommand=right_scrollbar.set)
@@ -195,32 +223,13 @@ for row in data:
 for doc in doc_list:
     doc_list[doc].doc_block(list_frame)
 
-def remove():
-    global doc
-    removed = []
-    for doc in doc_list:
-        if doc_list[doc].selected():
-            removed.append(doc_list[doc].destroy())
-    for name in removed:
-        del doc_list[name]
+right_block["main"] = main_right
 
-remove_button_m.config(command=remove)
+add_right = tk.Frame(right_frame, bg="lightgreen")
+add_right.grid(row=0, column=0, sticky="nesw")
+right_block["add"] = add_right
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+right_block["edit"] = add_right
 
 
 
