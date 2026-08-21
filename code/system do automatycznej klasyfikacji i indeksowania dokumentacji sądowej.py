@@ -104,7 +104,7 @@ top_block["main"] = main_top
 
 add_top = tk.Frame(top_frame, bg="lightpink")
 cancel_button_a = tk.Button(add_top, text="cancel", width=10, command=lambda n="main": view(n))
-add_label = tk.Label(add_top, text="add new document", font=("",15), bg="lightpink")
+add_label = tk.Label(add_top, text="Dodaj nowy dokumet", font=("",15), bg="lightpink")
 add_button = tk.Button(add_top, text="add", width=10)
 add_top.grid(row=0, column=0, sticky="nsew")
 cancel_button_a.pack(side="left")
@@ -226,7 +226,31 @@ for doc in doc_list:
 right_block["main"] = main_right
 
 add_right = tk.Frame(right_frame, bg="lightgreen")
+entry_frame = tk.Frame(add_right, padx=50, bg="lightgreen")
+name_label = tk.Label(entry_frame, text="nazwa", bg="lightgreen")
+name_entry = tk.Entry(entry_frame)
+syg_akt_label = tk.Label(entry_frame, text="sygnatura akt", bg="lightgreen")
+syg_akt_entry = tk.Entry(entry_frame)
+type_label = tk.Label(entry_frame, text="typ", bg="lightgreen")
+type_entry = tk.Entry(entry_frame)
+data_label = tk.Label(entry_frame, text="data", bg="lightgreen")
+data_entry = tk.Entry(entry_frame)
+strona1_label = tk.Label(entry_frame, text="strona skarżąca", bg="lightgreen")
+strona1_entry = tk.Entry(entry_frame)
+
 add_right.grid(row=0, column=0, sticky="nesw")
+entry_frame.pack(expand=True, fill='x')
+name_label.pack(anchor='w')
+name_entry.pack(fill='x')
+syg_akt_label.pack(anchor='w')
+syg_akt_entry.pack(fill='x')
+type_label.pack(anchor='w')
+type_entry.pack(fill='x')
+data_label.pack(anchor='w')
+data_entry.pack(fill='x')
+strona1_label.pack(anchor='w')
+strona1_entry.pack(fill='x')
+
 right_block["add"] = add_right
 
 right_block["edit"] = add_right
