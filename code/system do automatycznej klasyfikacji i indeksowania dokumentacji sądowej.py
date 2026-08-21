@@ -49,27 +49,65 @@ except sqlite3.Error:
 root = tk.Tk()
 root.geometry("1000x600+200+100")
 root.bind_all("<Button-1>", lambda e: None if isinstance(e.widget, tk.Entry) else root.focus())
-
 root.grid_columnconfigure(1, weight=1)
 root.grid_rowconfigure(1, weight=1)
 
-button_frame = tk.Frame(root, pady=10, padx=20, bg="lightpink")
+top_frame = tk.Frame(root, pady=10, padx=20, bg="lightpink")
 right_frame = tk.Frame(root, bg='lightgreen', pady=10)
 left_frame = tk.Frame(root, bg='lightblue')
+top_frame.grid(row=0, column=1, sticky='nsew')
+top_frame.grid_rowconfigure(0, weight=1)
+top_frame.grid_columnconfigure(0, weight=1)
 right_frame.grid(row=1, column=1, sticky='nsew')
-button_frame.grid(row=0, column=1, sticky='nsew')
 left_frame.grid(row=1, column=0, sticky='nsew')
 
-add_button = tk.Button(button_frame, text="add", width=10)
-remove_button = tk.Button(button_frame, text='remove', width=10)
-search_frame = tk.Frame(button_frame, bg='white')
+def view(name):
+    if name == "main":
+        top_frame.grid(column=1, columnspan=1)
+    else:
+        top_frame.grid(column=0, columnspan=2)
+
+    tk.Misc.tkraise(top_block[name])
+
+top_block = {}
+
+main_top = tk.Frame(top_frame, bg="lightpink")
+new_button = tk.Button(main_top, text="new", width=10, command=lambda n="add": view(n))
+remove_button_m = tk.Button(main_top, text='remove', width=10)
+search_frame = tk.Frame(main_top, bg='white')
 search_entry = tk.Entry(search_frame, width=20, bd=0)
 search_button = tk.Button(search_frame, bd=0, bg='white', text='🔍')
-add_button.pack(side='right', padx=(10, 0))
-remove_button.pack(side='right', padx=(0, 10))
+main_top.grid(row=0, column=0, sticky="nsew")
+new_button.pack(side='right', padx=(10, 0))
+remove_button_m.pack(side='right', padx=(0, 10))
 search_frame.pack(side='left')
 search_entry.pack(side='right')
 search_button.pack()
+top_block["main"] = main_top
+
+add_top = tk.Frame(top_frame, bg="lightpink")
+cancel_button_a = tk.Button(add_top, text="cancel", width=10, command=lambda n="main": view(n))
+add_label = tk.Label(add_top, text="add new document", font=("",15), bg="lightpink")
+add_button = tk.Button(add_top, text="add", width=10)
+add_top.grid(row=0, column=0, sticky="nsew")
+cancel_button_a.pack(side="left")
+add_label.pack(side="left", expand=True)
+add_button.pack(side="right")
+top_block["add"] = add_top
+
+edit_top = tk.Frame(top_frame, bg="lightpink")
+remove_button_e = tk.Button(edit_top, text="remove", width=10)
+save_button = tk.Button(edit_top, text="save", width=10)
+cancel_button_e = tk.Button(edit_top, text="cancel", width=10, command=lambda n="main": view(n))
+edit_top.grid(row=0, column=0, sticky="nsew")
+remove_button_e.pack(side="right", padx=(10,0))
+save_button.pack(side="right", padx=(0,10))
+cancel_button_e.pack(side="left")
+top_block["edit"] = edit_top
+
+
+
+
 
 left_canvas = tk.Canvas(left_frame, highlightthickness=0, bg="lightblue")
 filter_frame = tk.Frame(left_canvas, bg="lightblue")
@@ -166,6 +204,25 @@ def remove():
     for name in removed:
         del doc_list[name]
 
-remove_button.config(command=remove)
+remove_button_m.config(command=remove)
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+view("edit")
 root.mainloop()
