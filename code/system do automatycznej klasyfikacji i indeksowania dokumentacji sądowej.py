@@ -267,5 +267,5 @@ right_block["edit"] = add_right
 
 
 
-view("edit")
+view("main")
 root.mainloop()
