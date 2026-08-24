@@ -224,9 +224,9 @@ left_block["edit"] = edit_left
 main_right = tk.Frame(right_frame, bg=bg2)
 right_canvas = tk.Canvas(main_right, highlightthickness=0, bg=bg2)
 right_scrollbar = tk.Scrollbar(main_right, orient="vertical", command=right_canvas.yview)
-list_frame = tk.Frame(right_canvas)
+list_frame = tk.Frame(right_canvas, pady=5)
 main_right.grid(row=0, column=0, sticky="nsew")
-right_scrollbar.pack(side="right", fill='y', padx=(0, 5))
+right_scrollbar.pack(side="right", fill='y', padx=(0,5))
 right_canvas.pack(fill="both", expand=True, padx=20)
 right_canvas.configure(yscrollcommand=right_scrollbar.set)
 list_id = right_canvas.create_window((0, 0), window=list_frame, anchor="nw")
@@ -237,7 +237,8 @@ doc_list = {}
 for row in data:
     doc_list[row[0]] = Document(row)
 for doc in doc_list:
-    doc_list[doc].doc_block(list_frame)
+    doc_list[doc].doc_block(list_frame).config(command=lambda n="edit": view(n))
+    ttk.Separator(list_frame, orient="horizontal").pack(fill='x', pady=(0,5))
 
 right_block["main"] = main_right
 

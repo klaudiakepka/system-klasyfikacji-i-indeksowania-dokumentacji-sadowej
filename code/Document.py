@@ -25,6 +25,7 @@ class Document:
         self.flag = row[9]
 
         self.block = None
+        self.button = None
         self.state = tk.BooleanVar()
 
     def doc_block(self,parent_name):
@@ -35,16 +36,16 @@ class Document:
             _db_query("UPDATE documents SET flag=? WHERE name=?", (self.flag, self.name))
 
         self.block = tk.Frame(parent_name)
-        name = tk.Label(self.block, text=self.name)
+        self.button = tk.Button(self.block, text=self.name, anchor='w', bd=0)
         checkbox = tk.Checkbutton(self.block, variable=self.state)
         color = "red" if self.flag else "grey"
         flag_button = tk.Button(self.block, text="⚑", font=("Arial", 12), fg=color, bd=0, relief="flat", command=__toggle_flag)
-
-        self.block.pack(fill='x', pady=(10, 0))
-        name.pack(side="left", pady=5)
+        self.block.pack(fill='x')
+        self.button.pack(side="left", pady=5, fill='x', expand=True)
         checkbox.pack(side="right")
         flag_button.pack(side="right")
-        return self.block
+
+        return self.button
 
     def selected(self):
         return self.state.get()
