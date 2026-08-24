@@ -1,9 +1,11 @@
 import tkinter as tk
 from tkinter import ttk
 from tkcalendar import DateEntry
+from tkinterdnd2 import TkinterDnD as dnd
 import sqlite3
 from Document import Document
 from AutoEntry import AutoEntry
+from DropBox import DropBox
 
 courts = []
 sides = []
@@ -46,15 +48,19 @@ try:
 except sqlite3.Error:
     print("database error")
 
-root = tk.Tk()
+root = dnd.Tk()
 root.geometry("1000x600+200+100")
 root.bind_all("<Button-1>", lambda e: None if isinstance(e.widget, tk.Entry) else root.focus())
 root.grid_columnconfigure(1, weight=1)
 root.grid_rowconfigure(1, weight=1)
 
-top_frame = tk.Frame(root, pady=10, padx=20, bg="lightpink")
-right_frame = tk.Frame(root, bg='lightgreen', pady=10)
-left_frame = tk.Frame(root, bg='lightblue')
+bg1 = "lightpink"
+bg2 = "lightgreen"
+bg3 = "lightblue"
+
+top_frame = tk.Frame(root, pady=10, padx=20, bg=bg1)
+right_frame = tk.Frame(root, bg=bg2, pady=10)
+left_frame = tk.Frame(root, bg=bg3)
 top_frame.grid(row=0, column=1, sticky='nsew')
 top_frame.grid_rowconfigure(0, weight=1)
 top_frame.grid_columnconfigure(0, weight=1)
@@ -68,8 +74,10 @@ left_frame.grid_columnconfigure(0, weight=1)
 def view(name):
     if name == "main":
         top_frame.grid(column=1, columnspan=1)
+        add_left.grid_remove()
     else:
         top_frame.grid(column=0, columnspan=2)
+        add_left.grid()
 
     tk.Misc.tkraise(top_block[name])
     tk.Misc.tkraise(left_block[name])
@@ -88,7 +96,7 @@ def remove():
     for name in removed:
         del doc_list[name]
 
-main_top = tk.Frame(top_frame, bg="lightpink")
+main_top = tk.Frame(top_frame, bg=bg1)
 new_button = tk.Button(main_top, text="new", width=10, command=lambda n="add": view(n))
 remove_button_m = tk.Button(main_top, text='remove', width=10, command=remove)
 search_frame = tk.Frame(main_top, bg='white')
@@ -102,9 +110,9 @@ search_entry.pack(side='right')
 search_button.pack()
 top_block["main"] = main_top
 
-add_top = tk.Frame(top_frame, bg="lightpink")
+add_top = tk.Frame(top_frame, bg=bg1)
 cancel_button_a = tk.Button(add_top, text="cancel", width=10, command=lambda n="main": view(n))
-add_label = tk.Label(add_top, text="Dodaj nowy dokumet", font=("",15), bg="lightpink")
+add_label = tk.Label(add_top, text="Dodaj nowy dokumet", font=("",15), bg=bg1)
 add_button = tk.Button(add_top, text="add", width=10)
 add_top.grid(row=0, column=0, sticky="nsew")
 cancel_button_a.pack(side="left")
@@ -112,7 +120,7 @@ add_label.pack(side="left", expand=True)
 add_button.pack(side="right")
 top_block["add"] = add_top
 
-edit_top = tk.Frame(top_frame, bg="lightpink")
+edit_top = tk.Frame(top_frame, bg=bg1)
 remove_button_e = tk.Button(edit_top, text="remove", width=10)
 save_button = tk.Button(edit_top, text="save", width=10)
 cancel_button_e = tk.Button(edit_top, text="cancel", width=10, command=lambda n="main": view(n))
@@ -124,8 +132,8 @@ top_block["edit"] = edit_top
 
 
 
-main_left = tk.Canvas(left_frame, highlightthickness=0, bg="lightblue")
-filter_frame = tk.Frame(main_left, bg="lightblue")
+main_left = tk.Canvas(left_frame, highlightthickness=0, bg=bg3)
+filter_frame = tk.Frame(main_left, bg=bg3)
 main_left.grid(row=0, column=0, sticky="nesw", pady=20, padx=(10, 0))
 main_left.create_window(0, 0, window=filter_frame, anchor="nw")
 filter_frame.bind("<Configure>", lambda e: main_left.config(width=e.width))
@@ -139,22 +147,22 @@ def filter_section(parent, title):
             content.pack(anchor="w", padx=(20,0), pady=(5,0), after=header)
             header.config(text=f"▼ {title}")
 
-    header = tk.Button(parent, text=f"▶ {title}", width=30, anchor="w", borderwidth=0,bg="lightblue",
-                       activebackground="lightblue", command=toggle_visibility)
+    header = tk.Button(parent, text=f"▶ {title}", width=30, anchor="w", borderwidth=0, bg=bg3,
+                       activebackground=bg3, command=toggle_visibility)
     header.pack()
     ttk.Separator(parent, orient="horizontal").pack(fill='x', padx=10, pady=5)
-    content = tk.Frame(parent, bg="lightblue")
+    content = tk.Frame(parent, bg=bg3)
     return content
 
 flag_filter = filter_section(filter_frame, "flag")
-flag_yes = tk.Checkbutton(flag_filter, text="Tak", bg="lightblue", borderwidth=0)
-flag_no = tk.Checkbutton(flag_filter, text="Nie", bg="lightblue", borderwidth=0)
+flag_yes = tk.Checkbutton(flag_filter, text="Tak", bg=bg3, borderwidth=0)
+flag_no = tk.Checkbutton(flag_filter, text="Nie", bg=bg3, borderwidth=0)
 flag_yes.pack()
 flag_no.pack()
 
 att_filter = filter_section(filter_frame, "attachments")
-att_yes = tk.Checkbutton(att_filter, text="Tak", bg="lightblue", borderwidth=0)
-att_no = tk.Checkbutton(att_filter, text="Nie", bg="lightblue", borderwidth=0)
+att_yes = tk.Checkbutton(att_filter, text="Tak", bg=bg3, borderwidth=0)
+att_no = tk.Checkbutton(att_filter, text="Nie", bg=bg3, borderwidth=0)
 att_yes.pack()
 att_no.pack()
 
@@ -168,12 +176,12 @@ def clear_date():
     end_date.config(state='readonly')
 
 date_filter = filter_section(filter_frame, "data")
-input_block = tk.Frame(date_filter, bg="lightblue")
+input_block = tk.Frame(date_filter, bg=bg3)
 start_date = DateEntry(input_block, width=9, font=('Inter', 8), locale='pl_PL', showweeknumbers=False,
                        showothermonthdays=False, state="readonly")
 end_date = DateEntry(input_block, width=9, font=('Helvetica', 8), locale='pl_PL', showweeknumbers=False,
                      showothermonthdays=False, state="readonly")
-spacing = tk.Label(input_block, text='-', bg="lightblue")
+spacing = tk.Label(input_block, text='-', bg=bg3)
 clear_button = tk.Button(date_filter, text="clear", command=clear_date)
 input_block.pack(expand=True)
 start_date.pack(side="left")
@@ -195,18 +203,26 @@ type_search = AutoEntry(type_filter, types)
 type_search.pack()
 left_block["main"] = main_left
 
-add_left = tk.Frame(left_frame, bg="lightblue")
+add_left = tk.Frame(left_frame, bg=bg3)
+
+def add_doc(filepaths):
+    return
+
+drop_box_frame = tk.Frame(add_left, bg=bg3)
+drop_box = DropBox(drop_box_frame, on_drop=add_doc)
+drop_box_frame.pack(expand=True)
+drop_box.pack(padx=20)
 add_left.grid(row=0, column=0, sticky="nesw")
 left_block["add"] = add_left
 
-edit_left = tk.Frame(left_frame, bg="lightblue")
+edit_left = tk.Frame(left_frame, bg=bg3)
 edit_left.grid(row=0, column=0, sticky="nesw")
 left_block["edit"] = edit_left
 
 
 
-main_right = tk.Frame(right_frame, bg="lightgreen")
-right_canvas = tk.Canvas(main_right, highlightthickness=0, bg="lightgreen")
+main_right = tk.Frame(right_frame, bg=bg2)
+right_canvas = tk.Canvas(main_right, highlightthickness=0, bg=bg2)
 right_scrollbar = tk.Scrollbar(main_right, orient="vertical", command=right_canvas.yview)
 list_frame = tk.Frame(right_canvas)
 main_right.grid(row=0, column=0, sticky="nsew")
@@ -225,23 +241,23 @@ for doc in doc_list:
 
 right_block["main"] = main_right
 
-add_right = tk.Frame(right_frame, bg="lightgreen")
-entry_frame = tk.Frame(add_right, padx=70, pady=40, bg="lightgreen")
-name_label = tk.Label(entry_frame, text="nazwa", bg="lightgreen", font=("", 10, "bold"))
+add_right = tk.Frame(right_frame, bg=bg2)
+entry_frame = tk.Frame(add_right, padx=70, pady=40, bg=bg2)
+name_label = tk.Label(entry_frame, text="nazwa", bg=bg2, font=("", 10, "bold"))
 name_entry = tk.Entry(entry_frame)
-syg_akt_label = tk.Label(entry_frame, text="sygnatura akt", bg="lightgreen", font=("", 10, "bold"))
+syg_akt_label = tk.Label(entry_frame, text="sygnatura akt", bg=bg2, font=("", 10, "bold"))
 syg_akt_entry = tk.Entry(entry_frame)
-type_label = tk.Label(entry_frame, text="typ", bg="lightgreen", font=("", 10, "bold"))
+type_label = tk.Label(entry_frame, text="typ", bg=bg2, font=("", 10, "bold"))
 type_entry = tk.Entry(entry_frame)
-data_label = tk.Label(entry_frame, text="data", bg="lightgreen", font=("", 10, "bold"))
+data_label = tk.Label(entry_frame, text="data", bg=bg2, font=("", 10, "bold"))
 data_entry = tk.Entry(entry_frame)
-strona1_label = tk.Label(entry_frame, text="strona skarżąca", bg="lightgreen", font=("", 10, "bold"))
+strona1_label = tk.Label(entry_frame, text="strona skarżąca", bg=bg2, font=("", 10, "bold"))
 strona1_entry = tk.Entry(entry_frame)
-strona2_label = tk.Label(entry_frame, text="strona przeciwna", bg="lightgreen", font=("", 10, "bold"))
+strona2_label = tk.Label(entry_frame, text="strona przeciwna", bg=bg2, font=("", 10, "bold"))
 strona2_entry = tk.Entry(entry_frame)
-court_label = tk.Label(entry_frame, text="sąd", bg="lightgreen", font=("", 10, "bold"))
+court_label = tk.Label(entry_frame, text="sąd", bg=bg2, font=("", 10, "bold"))
 court_entry = tk.Entry(entry_frame)
-desc_label = tk.Label(entry_frame, text="opis", bg="lightgreen", font=("", 10, "bold"))
+desc_label = tk.Label(entry_frame, text="opis", bg=bg2, font=("", 10, "bold"))
 desc_entry = tk.Text(entry_frame)
 add_right.grid(row=0, column=0, sticky="nesw")
 entry_frame.pack(expand=True, fill='x')
