@@ -1,11 +1,17 @@
 import tkinter as tk
 from tkinter import ttk
 from tkcalendar import DateEntry
-from tkinterdnd2 import TkinterDnD as dnd
+import customtkinter as ctk
+from tkinterdnd2 import TkinterDnD, DND_FILES
 import sqlite3
 from Document import Document
 from AutoEntry import AutoEntry
 from DropBox import DropBox
+
+class TkinterDnD_CTk(TkinterDnD.Tk, ctk.CTk):
+    def __init__(self, *args, **kwargs):
+        ctk.CTk.__init__(self, *args, **kwargs)
+        self.TkdndVersion = TkinterDnD._require(self)
 
 courts = []
 sides = []
@@ -48,7 +54,7 @@ try:
 except sqlite3.Error:
     print("database error")
 
-root = dnd.Tk()
+root = TkinterDnD_CTk()
 root.geometry("1000x600+200+100")
 root.bind_all("<Button-1>", lambda e: None if isinstance(e.widget, tk.Entry) else root.focus())
 root.grid_columnconfigure(1, weight=1)
@@ -74,18 +80,38 @@ left_frame.grid_columnconfigure(0, weight=1)
 def view(name):
     if name == "main":
         top_frame.grid(column=1, columnspan=1)
+        main_top.grid()
+        main_right.grid()
+        main_left.grid()
+        add_top.grid_remove()
+        add_right.grid_remove()
         add_left.grid_remove()
-    else:
+        edit_top.grid_remove()
+        edit_left.grid_remove()
+    elif name == "add":
         top_frame.grid(column=0, columnspan=2)
+        add_top.grid()
+        add_right.grid()
         add_left.grid()
+        main_top.grid_remove()
+        main_right.grid_remove()
+        main_left.grid_remove()
+        edit_top.grid_remove()
+        edit_left.grid_remove()
+    elif name == "edit":
+        top_frame.grid(column=0, columnspan=2)
+        edit_top.grid()
+        add_right.grid()
+        edit_left.grid()
+        main_top.grid_remove()
+        main_right.grid_remove()
+        main_left.grid_remove()
+        add_top.grid_remove()
+        add_left.grid_remove()
 
-    tk.Misc.tkraise(top_block[name])
-    tk.Misc.tkraise(left_block[name])
-    tk.Misc.tkraise(right_block[name])
-
-top_block, left_block, right_block = {}, {}, {}
 
 
+#----------------------------------------------------------------------------------------------------------------------------
 
 def remove():
     global doc
@@ -108,7 +134,7 @@ remove_button_m.pack(side='right', padx=(0, 10))
 search_frame.pack(side='left')
 search_entry.pack(side='right')
 search_button.pack()
-top_block["main"] = main_top
+#----------------------------------------------------------------------------------------------------------------------------
 
 add_top = tk.Frame(top_frame, bg=bg1)
 cancel_button_a = tk.Button(add_top, text="cancel", width=10, command=lambda n="main": view(n))
@@ -118,7 +144,7 @@ add_top.grid(row=0, column=0, sticky="nsew")
 cancel_button_a.pack(side="left")
 add_label.pack(side="left", expand=True)
 add_button.pack(side="right")
-top_block["add"] = add_top
+#----------------------------------------------------------------------------------------------------------------------------
 
 edit_top = tk.Frame(top_frame, bg=bg1)
 remove_button_e = tk.Button(edit_top, text="remove", width=10)
@@ -128,7 +154,7 @@ edit_top.grid(row=0, column=0, sticky="nsew")
 remove_button_e.pack(side="right", padx=(10,0))
 save_button.pack(side="right", padx=(0,10))
 cancel_button_e.pack(side="left")
-top_block["edit"] = edit_top
+#----------------------------------------------------------------------------------------------------------------------------
 
 
 
@@ -201,7 +227,7 @@ side_search.pack()
 type_filter = filter_section(filter_frame, "typ")
 type_search = AutoEntry(type_filter, types)
 type_search.pack()
-left_block["main"] = main_left
+#----------------------------------------------------------------------------------------------------------------------------
 
 add_left = tk.Frame(left_frame, bg=bg3)
 
@@ -213,55 +239,44 @@ drop_box = DropBox(drop_box_frame, on_drop=add_doc)
 drop_box_frame.pack(expand=True)
 drop_box.pack(padx=20)
 add_left.grid(row=0, column=0, sticky="nesw")
-left_block["add"] = add_left
+#----------------------------------------------------------------------------------------------------------------------------
 
-edit_left = tk.Frame(left_frame, bg=bg3)
+edit_left = tk.Frame(left_frame, bg=bg3, width=400)
 edit_left.grid(row=0, column=0, sticky="nesw")
-left_block["edit"] = edit_left
+#----------------------------------------------------------------------------------------------------------------------------
 
 
 
-main_right = tk.Frame(right_frame, bg=bg2)
-right_canvas = tk.Canvas(main_right, highlightthickness=0, bg=bg2)
-right_scrollbar = tk.Scrollbar(main_right, orient="vertical", command=right_canvas.yview)
-list_frame = tk.Frame(right_canvas, pady=5)
-main_right.grid(row=0, column=0, sticky="nsew")
-right_scrollbar.pack(side="right", fill='y', padx=(0,5))
-right_canvas.pack(fill="both", expand=True, padx=20)
-right_canvas.configure(yscrollcommand=right_scrollbar.set)
-list_id = right_canvas.create_window((0, 0), window=list_frame, anchor="nw")
-list_frame.bind("<Configure>", lambda e: right_canvas.configure(scrollregion=right_canvas.bbox("all")))
-right_canvas.bind("<Configure>", lambda e: right_canvas.itemconfig(list_id, width=e.width))
+main_right = ctk.CTkScrollableFrame(right_frame, fg_color=bg2)
+main_right.grid(row=0, column=0, sticky="nsew", padx=(20,0))
 
 doc_list = {}
 for row in data:
     doc_list[row[0]] = Document(row)
 for doc in doc_list:
-    doc_list[doc].doc_block(list_frame).config(command=lambda n="edit": view(n))
-    ttk.Separator(list_frame, orient="horizontal").pack(fill='x', pady=(0,5))
+    doc_list[doc].doc_block(main_right).config(command=lambda n="edit": view(n))
+    ttk.Separator(main_right, orient="horizontal").pack(fill='x', pady=(0,5))
+#----------------------------------------------------------------------------------------------------------------------------
 
-right_block["main"] = main_right
-
-add_right = tk.Frame(right_frame, bg=bg2)
-entry_frame = tk.Frame(add_right, padx=70, pady=40, bg=bg2)
-name_label = tk.Label(entry_frame, text="nazwa", bg=bg2, font=("", 10, "bold"))
-name_entry = tk.Entry(entry_frame)
-syg_akt_label = tk.Label(entry_frame, text="sygnatura akt", bg=bg2, font=("", 10, "bold"))
-syg_akt_entry = tk.Entry(entry_frame)
-type_label = tk.Label(entry_frame, text="typ", bg=bg2, font=("", 10, "bold"))
-type_entry = tk.Entry(entry_frame)
-data_label = tk.Label(entry_frame, text="data", bg=bg2, font=("", 10, "bold"))
-data_entry = tk.Entry(entry_frame)
-strona1_label = tk.Label(entry_frame, text="strona skarżąca", bg=bg2, font=("", 10, "bold"))
-strona1_entry = tk.Entry(entry_frame)
-strona2_label = tk.Label(entry_frame, text="strona przeciwna", bg=bg2, font=("", 10, "bold"))
-strona2_entry = tk.Entry(entry_frame)
-court_label = tk.Label(entry_frame, text="sąd", bg=bg2, font=("", 10, "bold"))
-court_entry = tk.Entry(entry_frame)
-desc_label = tk.Label(entry_frame, text="opis", bg=bg2, font=("", 10, "bold"))
-desc_entry = tk.Text(entry_frame)
-add_right.grid(row=0, column=0, sticky="nesw")
-entry_frame.pack(expand=True, fill='x')
+add_right = ctk.CTkScrollableFrame(right_frame, fg_color=bg2)
+ai_switch = ctk.CTkSwitch(add_right, text="auto fill", text_color="black")
+name_label = tk.Label(add_right, text="nazwa", bg=bg2, font=("", 10, "bold"))
+name_entry = tk.Entry(add_right)
+syg_akt_label = tk.Label(add_right, text="sygnatura akt", bg=bg2, font=("", 10, "bold"))
+syg_akt_entry = tk.Entry(add_right)
+type_label = tk.Label(add_right, text="typ", bg=bg2, font=("", 10, "bold"))
+type_entry = tk.Entry(add_right)
+data_label = tk.Label(add_right, text="data", bg=bg2, font=("", 10, "bold"))
+data_entry = tk.Entry(add_right)
+strona1_label = tk.Label(add_right, text="strona skarżąca", bg=bg2, font=("", 10, "bold"))
+strona1_entry = tk.Entry(add_right)
+strona2_label = tk.Label(add_right, text="strona przeciwna", bg=bg2, font=("", 10, "bold"))
+strona2_entry = tk.Entry(add_right)
+court_label = tk.Label(add_right, text="sąd", bg=bg2, font=("", 10, "bold"))
+court_entry = tk.Entry(add_right)
+desc_label = tk.Label(add_right, text="opis", bg=bg2, font=("", 10, "bold"))
+desc_entry = tk.Text(add_right, height=5)
+add_right.grid(row=0, column=0, sticky="nsew", padx=(20,0))
 name_label.pack(anchor='w')
 name_entry.pack(fill='x', pady=(0,10))
 syg_akt_label.pack(anchor='w')
@@ -278,9 +293,8 @@ court_label.pack(anchor='w')
 court_entry.pack(fill='x', pady=(0,10))
 desc_label.pack(anchor='w')
 desc_entry.pack(fill='x', pady=(0,10))
-right_block["add"] = add_right
-
-right_block["edit"] = add_right
+ai_switch.pack(anchor='w')
+#----------------------------------------------------------------------------------------------------------------------------
 
 
 
