@@ -3,7 +3,6 @@ from tkinter import ttk
 from tkcalendar import DateEntry
 import customtkinter as ctk
 from tkinterdnd2 import TkinterDnD, DND_FILES
-import sqlite3
 from Document import Document
 from AutoEntry import AutoEntry
 from DropBox import DropBox
@@ -12,47 +11,6 @@ class TkinterDnD_CTk(TkinterDnD.Tk, ctk.CTk):
     def __init__(self, *args, **kwargs):
         ctk.CTk.__init__(self, *args, **kwargs)
         self.TkdndVersion = TkinterDnD._require(self)
-
-courts = []
-sides = []
-types = []
-data = ""
-
-try:
-    connection = sqlite3.connect("./data/data.db")
-    cursor = connection.cursor()
-    cursor.execute("""
-            CREATE TABLE IF NOT EXISTS documents (
-                name VARCHAR(100) NOT NULL UNIQUE PRIMARY KEY,
-                syg_akt VARCHAR(40) NOT NULL,
-                type VARCHAR(40),
-                date DATE,
-                skarzacy VARCHAR(100),
-                przeciwny VARCHAR(100),
-                sad VARCHAR(100),
-                desc TEXT,
-                attached BOOLEAN NOT NULL DEFAULT 0,
-                flag BOOLEAN NOT NULL DEFAULT 0
-            );""")
-
-    cursor.execute("SELECT DISTINCT sad FROM documents")
-    courts_raw = cursor.fetchall()
-    courts = [row[0] for row in courts_raw]
-
-    cursor.execute("""SELECT DISTINCT skarzacy FROM documents UNION SELECT DISTINCT przeciwny FROM documents""")
-    sides_raw = cursor.fetchall()
-    sides = [row[0] for row in sides_raw]
-
-    cursor.execute("SELECT DISTINCT type FROM documents")
-    types_raw = cursor.fetchall()
-    types = [row[0] for row in types_raw]
-
-    cursor.execute("SELECT * FROM documents")
-    data = cursor.fetchall()
-
-    connection.close()
-except sqlite3.Error:
-    print("database error")
 
 root = TkinterDnD_CTk()
 root.geometry("1000x600+200+100")
@@ -114,13 +72,7 @@ def view(name):
 #----------------------------------------------------------------------------------------------------------------------------
 
 def remove():
-    global doc
-    removed = []
-    for doc in doc_list:
-        if doc_list[doc].selected():
-            removed.append(doc_list[doc].destroy())
-    for name in removed:
-        del doc_list[name]
+    return '.'
 
 main_top = tk.Frame(top_frame, bg=bg1)
 new_button = tk.Button(main_top, text="new", width=10, command=lambda n="add": view(n))
@@ -217,15 +169,15 @@ clear_button.pack(anchor='w', pady=(5,0), padx=5)
 clear_date()
 
 court_filter = filter_section(filter_frame, "sąd")
-court_search = AutoEntry(court_filter, courts)
+court_search = AutoEntry(court_filter, Document.dist_courts())
 court_search.pack()
 
 side_filter = filter_section(filter_frame, "strona sporu")
-side_search = AutoEntry(side_filter, sides)
+side_search = AutoEntry(side_filter, Document.dist_sides())
 side_search.pack()
 
 type_filter = filter_section(filter_frame, "typ")
-type_search = AutoEntry(type_filter, types)
+type_search = AutoEntry(type_filter, Document.dist_types())
 type_search.pack()
 #----------------------------------------------------------------------------------------------------------------------------
 
@@ -250,12 +202,28 @@ edit_left.grid(row=0, column=0, sticky="nesw")
 main_right = ctk.CTkScrollableFrame(right_frame, fg_color=bg2)
 main_right.grid(row=0, column=0, sticky="nsew", padx=(20,0))
 
-doc_list = {}
-for row in data:
-    doc_list[row[0]] = Document(row)
-for doc in doc_list:
-    doc_list[doc].doc_block(main_right).config(command=lambda n="edit": view(n))
-    ttk.Separator(main_right, orient="horizontal").pack(fill='x', pady=(0,5))
+name
+
+def doc_block_build(doc, parent):
+    def _toggle_flag():
+        doc.toggle_flag()
+        flag_button.configure(text_color="red" if doc.flag else "gray")
+
+    doc_block = ctk.CTkFrame(parent)
+    main_button = ctk.CTkButton(doc_block, text=doc.name, anchor='w', command=lambda n="edit": view(n))
+    flag_button = ctk.CTkButton(doc_block, text="⚑", width=30, text_color="red" if doc.flag else "gray",
+                                command=_toggle_flag)
+    checkbox = ctk.CTkCheckBox(doc_block, text="", width=0)
+    doc_block.pack(fill='x', padx=2)
+    main_button.pack(side="left", fill='x', expand=True)
+    flag_button.pack(side="right")
+    checkbox.pack(side="right")
+
+    return doc_block
+
+documents = Document.load()
+for document in documents:
+    block = doc_block_build(document, main_right)
 #----------------------------------------------------------------------------------------------------------------------------
 
 add_right = ctk.CTkScrollableFrame(right_frame, fg_color=bg2)

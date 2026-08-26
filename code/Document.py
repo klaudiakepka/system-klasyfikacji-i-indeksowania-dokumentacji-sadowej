@@ -1,17 +1,9 @@
-import tkinter as tk
 import sqlite3
 
-def _db_query(query, param=None):
-    try:
-        connection = sqlite3.connect("./data/data.db")
-        cursor = connection.cursor()
-        cursor.execute(query, param)
-        connection.commit()
-        connection.close()
-    except sqlite3.Error as e:
-        print("database error")
-
 class Document:
+    col = "name, syg_akt, type, date, skarzacy, przeciwny, sad, desc, attached, flag"
+    path = "./data/data.db"
+
     def __init__(self, row):
         self.name = row[0]
         self.syg_akt = row[1]
@@ -24,34 +16,67 @@ class Document:
         self.attached = row[8]
         self.flag = row[9]
 
-        self.block = None
-        self.button = None
-        self.state = tk.BooleanVar()
+    @classmethod
+    def load(cls, *, name=None, court=None, date=None, flag=None):
+        query = f"SELECT {cls.col} FROM documents WHERE 1=1"
+        params = []
 
-    def doc_block(self,parent_name):
-        def __toggle_flag():
-            self.flag = not self.flag
-            new_color = "red" if self.flag else "grey"
-            flag_button.config(fg=new_color)
-            _db_query("UPDATE documents SET flag=? WHERE name=?", (self.flag, self.name))
+        if name:
+            query += " AND name LIKE ?"
+            params.append(f"%{name}%")
+        if court:
+            query += " AND sad LIKE ?"
+            params.append(f"%{court}%")
+        if date:
+            query += " AND date LIKE ?"
+            params.append(f"{date}%")
+        if flag is not None:
+            query += " AND flag = ?"
+            params.append(int(flag))
 
-        self.block = tk.Frame(parent_name)
-        self.button = tk.Button(self.block, text=self.name, anchor='w', bd=0)
-        checkbox = tk.Checkbutton(self.block, variable=self.state)
-        color = "red" if self.flag else "grey"
-        flag_button = tk.Button(self.block, text="⚑", font=("Arial", 12), fg=color, bd=0, relief="flat", command=__toggle_flag)
-        self.block.pack(fill='x')
-        self.button.pack(side="left", pady=5, fill='x', expand=True)
-        checkbox.pack(side="right")
-        flag_button.pack(side="right")
+        query += " ORDER BY date DESC"
 
-        return self.button
+        conn = sqlite3.connect(cls.path)
+        try:
+            rows = conn.execute(query, params).fetchall()
+        finally:
+            conn.close()
 
-    def selected(self):
-        return self.state.get()
+        return [cls(row) for row in rows]
 
-    def destroy(self):
-        if self.block:
-            self.block.destroy()
-            _db_query("DELETE FROM documents WHERE name=?", (self.name,))
-            return self.name
+    @classmethod
+    def dist_courts(cls):
+        conn = sqlite3.connect(cls.path)
+        try:
+            rows = conn.execute("SELECT DISTINCT sad FROM documents ORDER BY sad").fetchall()
+        finally:
+            conn.close()
+        return [row[0] for row in rows]
+
+    @classmethod
+    def dist_types(cls):
+        conn = sqlite3.connect(cls.path)
+        try:
+            rows = conn.execute("SELECT DISTINCT type FROM documents ORDER BY type").fetchall()
+        finally:
+            conn.close()
+        return [row[0] for row in rows]
+
+    @classmethod
+    def dist_sides(cls):
+        conn = sqlite3.connect(cls.path)
+        try:
+            rows = conn.execute("SELECT skarzacy AS side FROM documents "
+                                "UNION SELECT przeciwny FROM documents ORDER BY side;").fetchall()
+        finally:
+            conn.close()
+        return [row[0] for row in rows]
+
+    def toggle_flag(self):
+        self.flag = not self.flag
+        conn = sqlite3.connect(Document.path)
+        try:
+            conn.execute("UPDATE documents SET flag = ? WHERE name = ?", (self.flag, self.name))
+            conn.commit()
+        finally:
+            conn.close()
