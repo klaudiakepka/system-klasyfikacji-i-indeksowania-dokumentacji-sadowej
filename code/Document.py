@@ -17,7 +17,7 @@ class Document:
         self.flag = row[9]
 
     @classmethod
-    def load(cls, *, name=None, court=None, date=None, flag=None):
+    def load(cls, *, name=None, court=None, side=None):
         query = f"SELECT {cls.col} FROM documents WHERE 1=1"
         params = []
 
@@ -27,12 +27,9 @@ class Document:
         if court:
             query += " AND sad LIKE ?"
             params.append(f"%{court}%")
-        if date:
-            query += " AND date LIKE ?"
-            params.append(f"{date}%")
-        if flag is not None:
-            query += " AND flag = ?"
-            params.append(int(flag))
+        if side:
+            query += " AND (skarzacy LIKE ? OR przeciwny LIKE ?)"
+            params.extend([f"%{side}%", f"%{side}%"])
 
         query += " ORDER BY date DESC"
 

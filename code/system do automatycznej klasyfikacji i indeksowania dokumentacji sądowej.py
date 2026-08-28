@@ -76,6 +76,9 @@ def remove():
     return '.'
 
 name_var = tk.StringVar()
+court_var = tk.StringVar()
+sides_var = tk.StringVar()
+
 def apply_filters_name(event=None):
     filters = {}
     name = name_var.get().strip()
@@ -120,9 +123,6 @@ cancel_button_e.pack(side="left")
 
 
 
-court_var = tk.StringVar()
-flag_var = tk.StringVar(value="All")
-
 def apply_filters():
     filters = {}
 
@@ -132,6 +132,9 @@ def apply_filters():
     court = court_var.get().strip()
     if court:
         filters["court"] = court
+    side = sides_var.get().strip()
+    if side:
+        filters["side"] = court
 
     refresh(**filters)
 
@@ -194,11 +197,11 @@ clear_button.pack(anchor='w', pady=(5,0), padx=5)
 clear_date()
 
 court_filter = filter_block(filter_frame, "sąd")
-court_search = AutoEntry(court_filter, Document.dist_courts())
+court_search = AutoEntry(court_filter, Document.dist_courts(), textvariable=court_var)
 court_search.pack()
 
 side_filter = filter_block(filter_frame, "strona sporu")
-side_search = AutoEntry(side_filter, Document.dist_sides())
+side_search = AutoEntry(side_filter, Document.dist_sides(), textvariable=sides_var)
 side_search.pack()
 
 type_filter = filter_block(filter_frame, "typ")
