@@ -7,6 +7,7 @@ from Document import Document
 from AutoEntry import AutoEntry
 from DropBox import DropBox
 
+
 class TkinterDnD_CTk(TkinterDnD.Tk, ctk.CTk):
     def __init__(self, *args, **kwargs):
         ctk.CTk.__init__(self, *args, **kwargs)
@@ -74,12 +75,21 @@ def view(name):
 def remove():
     return '.'
 
+name_var = tk.StringVar()
+def apply_filters_name(event=None):
+    filters = {}
+    name = name_var.get().strip()
+    if name:
+        filters["name"] = name
+    refresh(**filters)
+
 main_top = tk.Frame(top_frame, bg=bg1)
 new_button = tk.Button(main_top, text="new", width=10, command=lambda n="add": view(n))
 remove_button_m = tk.Button(main_top, text='remove', width=10, command=remove)
 search_frame = tk.Frame(main_top, bg='white')
-search_entry = tk.Entry(search_frame, width=20, bd=0)
-search_button = tk.Button(search_frame, bd=0, bg='white', text='🔍')
+search_entry = ctk.CTkEntry(search_frame, textvariable=name_var, placeholder_text="tytuł pliku", border_width=0)
+search_entry.bind("<Return>", apply_filters_name)
+search_button = tk.Button(search_frame, bd=0, bg='white', text='🔍', command=apply_filters_name)
 main_top.grid(row=0, column=0, sticky="nsew")
 new_button.pack(side='right', padx=(10, 0))
 remove_button_m.pack(side='right', padx=(0, 10))
@@ -110,13 +120,28 @@ cancel_button_e.pack(side="left")
 
 
 
+court_var = tk.StringVar()
+flag_var = tk.StringVar(value="All")
+
+def apply_filters():
+    filters = {}
+
+    name = name_var.get().strip()
+    if name:
+        filters["name"] = name
+    court = court_var.get().strip()
+    if court:
+        filters["court"] = court
+
+    refresh(**filters)
+
 main_left = tk.Canvas(left_frame, highlightthickness=0, bg=bg3)
 filter_frame = tk.Frame(main_left, bg=bg3)
 main_left.grid(row=0, column=0, sticky="nesw", pady=20, padx=(10, 0))
 main_left.create_window(0, 0, window=filter_frame, anchor="nw")
 filter_frame.bind("<Configure>", lambda e: main_left.config(width=e.width))
 
-def filter_section(parent, title):
+def filter_block(parent, title):
     def toggle_visibility():
         if content.winfo_ismapped():
             content.pack_forget()
@@ -132,13 +157,13 @@ def filter_section(parent, title):
     content = tk.Frame(parent, bg=bg3)
     return content
 
-flag_filter = filter_section(filter_frame, "flag")
+flag_filter = filter_block(filter_frame, "flag")
 flag_yes = tk.Checkbutton(flag_filter, text="Tak", bg=bg3, borderwidth=0)
 flag_no = tk.Checkbutton(flag_filter, text="Nie", bg=bg3, borderwidth=0)
 flag_yes.pack()
 flag_no.pack()
 
-att_filter = filter_section(filter_frame, "attachments")
+att_filter = filter_block(filter_frame, "attachments")
 att_yes = tk.Checkbutton(att_filter, text="Tak", bg=bg3, borderwidth=0)
 att_no = tk.Checkbutton(att_filter, text="Nie", bg=bg3, borderwidth=0)
 att_yes.pack()
@@ -153,7 +178,7 @@ def clear_date():
     end_date.delete(0, 'end')
     end_date.config(state='readonly')
 
-date_filter = filter_section(filter_frame, "data")
+date_filter = filter_block(filter_frame, "data")
 input_block = tk.Frame(date_filter, bg=bg3)
 start_date = DateEntry(input_block, width=9, font=('Inter', 8), locale='pl_PL', showweeknumbers=False,
                        showothermonthdays=False, state="readonly")
@@ -168,17 +193,20 @@ end_date.pack(side="left")
 clear_button.pack(anchor='w', pady=(5,0), padx=5)
 clear_date()
 
-court_filter = filter_section(filter_frame, "sąd")
+court_filter = filter_block(filter_frame, "sąd")
 court_search = AutoEntry(court_filter, Document.dist_courts())
 court_search.pack()
 
-side_filter = filter_section(filter_frame, "strona sporu")
+side_filter = filter_block(filter_frame, "strona sporu")
 side_search = AutoEntry(side_filter, Document.dist_sides())
 side_search.pack()
 
-type_filter = filter_section(filter_frame, "typ")
+type_filter = filter_block(filter_frame, "typ")
 type_search = AutoEntry(type_filter, Document.dist_types())
 type_search.pack()
+
+filter_button = ctk.CTkButton(filter_frame, text="filter", command=apply_filters)
+filter_button.pack(anchor='e')
 #----------------------------------------------------------------------------------------------------------------------------
 
 add_left = tk.Frame(left_frame, bg=bg3)
@@ -202,8 +230,6 @@ edit_left.grid(row=0, column=0, sticky="nesw")
 main_right = ctk.CTkScrollableFrame(right_frame, fg_color=bg2)
 main_right.grid(row=0, column=0, sticky="nsew", padx=(20,0))
 
-name
-
 def doc_block_build(doc, parent):
     def _toggle_flag():
         doc.toggle_flag()
@@ -221,9 +247,17 @@ def doc_block_build(doc, parent):
 
     return doc_block
 
-documents = Document.load()
-for document in documents:
-    block = doc_block_build(document, main_right)
+def refresh(**filters):
+    for child in main_right.winfo_children():
+        child.destroy()
+
+    documents = Document.load(**filters)
+    if not documents:
+        empty_label = ctk.CTkLabel(main_right, text="brak dokumentów spełniających kryteria")
+        empty_label.pack(expand=True, fill='x')
+        return
+    for document in documents:
+        block = doc_block_build(document, main_right)
 #----------------------------------------------------------------------------------------------------------------------------
 
 add_right = ctk.CTkScrollableFrame(right_frame, fg_color=bg2)
@@ -267,4 +301,5 @@ ai_switch.pack(anchor='w')
 
 
 view("main")
+refresh()
 root.mainloop()
