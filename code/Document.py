@@ -17,13 +17,17 @@ class Document:
         self.flag = row[9]
 
     @classmethod
-    def load(cls, *,flag=None, name=None, court=None, side=None, doctype=None):
+    def load(cls, *, flag=None, attached=None, start_date=None, end_date=None, name=None, court=None,
+             side=None, doctype=None):
         query = f"SELECT {cls.col} FROM documents WHERE 1=1"
         params = []
 
         if flag is not None:
             query += " AND flag = ?"
             params.append(int(flag))
+        if attached is not None:
+            query += " AND attached = ?"
+            params.append(int(attached))
 
         if name:
             query += " AND name LIKE ?"
@@ -37,7 +41,6 @@ class Document:
         if doctype:
             query += " AND type LIKE ?"
             params.append(f"%{doctype}%")
-
         query += " ORDER BY date DESC"
 
         conn = sqlite3.connect(cls.path)

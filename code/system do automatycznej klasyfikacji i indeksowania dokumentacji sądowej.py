@@ -77,7 +77,8 @@ def remove():
 name_var = ctk.StringVar()
 flag_var = ctk.StringVar(value="all")
 attached_var = ctk.StringVar(value="all")
-
+start_date_var = ctk.StringVar()
+end_date_var = ctk.StringVar()
 court_var = ctk.StringVar()
 sides_var = ctk.StringVar()
 doctype_var = ctk.StringVar()
@@ -99,6 +100,12 @@ def apply_filters(event = None):
     elif attached == "no":
         filters["attached"] = False
 
+    start_date = start_date_var.get()
+    if start_date:
+        filters["start_date"] = start_date
+    end_date = end_date_var.get()
+    if end_date:
+        filters["end_date"] = end_date
 
     court = court_var.get().strip()
     if court:
@@ -184,48 +191,44 @@ def toggle(clicked, var, yes_var, no_var):
 flag_yes_var = ctk.IntVar(value=0)
 flag_no_var = ctk.IntVar(value=0)
 flag_filter = filter_block(filter_frame, "flag")
-flag_yes = ctk.CTkCheckBox(flag_filter, text="Tak", variable=flag_yes_var,
-                           command=lambda: toggle("yes", flag_var, flag_yes_var, flag_no_var),
-                           fg_color=bg3, text_color="black")
-flag_no = ctk.CTkCheckBox(flag_filter, text="Nie", variable=flag_no_var,
-                          command=lambda: toggle("no", flag_var, flag_yes_var, flag_no_var),
-                          fg_color=bg3, text_color="black")
+flag_yes = ctk.CTkCheckBox(flag_filter, text="Tak", variable=flag_yes_var, fg_color=bg3, text_color="black",
+                           command=lambda: toggle("yes", flag_var, flag_yes_var, flag_no_var))
+flag_no = ctk.CTkCheckBox(flag_filter, text="Nie", variable=flag_no_var, fg_color=bg3, text_color="black",
+                          command=lambda: toggle("no", flag_var, flag_yes_var, flag_no_var))
 flag_yes.pack()
 flag_no.pack()
 
 att_yes_var = ctk.IntVar(value=0)
 att_no_var = ctk.IntVar(value=0)
 att_filter = filter_block(filter_frame, "attachments")
-att_yes = tk.Checkbutton(att_filter, variable=att_yes_var,
-                         command=lambda: toggle("yes", attached_var, att_yes_var, att_no_var),
-                         text="Tak", bg=bg3, borderwidth=0)
-att_no = tk.Checkbutton(att_filter, variable=att_no_var,
-                        command=lambda: toggle("yes", attached_var, att_yes_var, att_no_var),
-                        text="Nie", bg=bg3, borderwidth=0)
+att_yes = ctk.CTkCheckBox(att_filter, variable=att_yes_var, text="Tak", fg_color=bg3,
+                        command=lambda: toggle("yes", attached_var, att_yes_var, att_no_var))
+att_no = ctk.CTkCheckBox(att_filter, variable=att_no_var, text="Nie", fg_color=bg3,
+                        command=lambda: toggle("no", attached_var, att_yes_var, att_no_var))
 att_yes.pack()
 att_no.pack()
 
 def clear_date():
-    start_date.config(state='normal')
-    start_date.delete(0, 'end')
-    start_date.config(state='readonly')
+    start_date_entry.config(state='normal')
+    start_date_entry.delete(0, 'end')
+    start_date_entry.config(state='readonly')
 
-    end_date.config(state='normal')
-    end_date.delete(0, 'end')
-    end_date.config(state='readonly')
+    end_date_entry.config(state='normal')
+    end_date_entry.delete(0, 'end')
+    end_date_entry.config(state='readonly')
 
 date_filter = filter_block(filter_frame, "data")
 input_block = tk.Frame(date_filter, bg=bg3)
-start_date = DateEntry(input_block, width=9, font=('Inter', 8), locale='pl_PL', showweeknumbers=False,
-                       showothermonthdays=False, state="readonly")
-end_date = DateEntry(input_block, width=9, font=('Helvetica', 8), locale='pl_PL', showweeknumbers=False,
-                     showothermonthdays=False, state="readonly")
+start_date_entry = DateEntry(input_block, width=9, font=('Inter', 8), locale='pl_PL', showweeknumbers=False,
+                             showothermonthdays=False, state="readonly")
+end_date_entry = DateEntry(input_block, width=9, font=('Helvetica', 8), locale='pl_PL', showweeknumbers=False,
+                           showothermonthdays=False, state="readonly")
 spacing = tk.Label(input_block, text='-', bg=bg3)
 clear_button = tk.Button(date_filter, text="clear", command=clear_date)
 input_block.pack(expand=True)
-start_date.pack(side="left")
+start_date_entry.pack(side="left")
 spacing.pack(side="left")
-end_date.pack(side="left")
+end_date_entry.pack(side="left")
 clear_button.pack(anchor='w', pady=(5,0), padx=5)
 clear_date()
 
