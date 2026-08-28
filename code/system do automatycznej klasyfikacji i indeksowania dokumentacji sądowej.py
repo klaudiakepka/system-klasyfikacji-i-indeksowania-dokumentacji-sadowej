@@ -7,7 +7,6 @@ from Document import Document
 from AutoEntry import AutoEntry
 from DropBox import DropBox
 
-
 class TkinterDnD_CTk(TkinterDnD.Tk, ctk.CTk):
     def __init__(self, *args, **kwargs):
         ctk.CTk.__init__(self, *args, **kwargs)
@@ -75,15 +74,42 @@ def view(name):
 def remove():
     return '.'
 
-name_var = tk.StringVar()
-court_var = tk.StringVar()
-sides_var = tk.StringVar()
+name_var = ctk.StringVar()
+flag_var = ctk.StringVar(value="all")
+attached_var = ctk.StringVar(value="all")
 
-def apply_filters_name(event=None):
+court_var = ctk.StringVar()
+sides_var = ctk.StringVar()
+doctype_var = ctk.StringVar()
+
+def apply_filters(event = None):
     filters = {}
+
     name = name_var.get().strip()
     if name:
         filters["name"] = name
+    flag = flag_var.get()
+    if flag == "yes":
+        filters["flag"] = True
+    elif flag == "no":
+        filters["flag"] = False
+    attached = attached_var.get()
+    if attached == "yes":
+        filters["attached"] = True
+    elif attached == "no":
+        filters["attached"] = False
+
+
+    court = court_var.get().strip()
+    if court:
+        filters["court"] = court
+    side = sides_var.get().strip()
+    if side:
+        filters["side"] = side
+    doctype = doctype_var.get().strip()
+    if doctype:
+        filters["doctype"] = doctype
+
     refresh(**filters)
 
 main_top = tk.Frame(top_frame, bg=bg1)
@@ -91,8 +117,8 @@ new_button = tk.Button(main_top, text="new", width=10, command=lambda n="add": v
 remove_button_m = tk.Button(main_top, text='remove', width=10, command=remove)
 search_frame = tk.Frame(main_top, bg='white')
 search_entry = ctk.CTkEntry(search_frame, textvariable=name_var, placeholder_text="tytuł pliku", border_width=0)
-search_entry.bind("<Return>", apply_filters_name)
-search_button = tk.Button(search_frame, bd=0, bg='white', text='🔍', command=apply_filters_name)
+search_entry.bind("<Return>", apply_filters)
+search_button = tk.Button(search_frame, bd=0, bg='white', text='🔍', command=apply_filters)
 main_top.grid(row=0, column=0, sticky="nsew")
 new_button.pack(side='right', padx=(10, 0))
 remove_button_m.pack(side='right', padx=(0, 10))
@@ -123,21 +149,6 @@ cancel_button_e.pack(side="left")
 
 
 
-def apply_filters():
-    filters = {}
-
-    name = name_var.get().strip()
-    if name:
-        filters["name"] = name
-    court = court_var.get().strip()
-    if court:
-        filters["court"] = court
-    side = sides_var.get().strip()
-    if side:
-        filters["side"] = court
-
-    refresh(**filters)
-
 main_left = tk.Canvas(left_frame, highlightthickness=0, bg=bg3)
 filter_frame = tk.Frame(main_left, bg=bg3)
 main_left.grid(row=0, column=0, sticky="nesw", pady=20, padx=(10, 0))
@@ -160,15 +171,37 @@ def filter_block(parent, title):
     content = tk.Frame(parent, bg=bg3)
     return content
 
+def toggle(clicked, var, yes_var, no_var):
+    if clicked == "yes" and yes_var.get() == 1:
+        no_var.set(0)
+        var.set("yes")
+    elif clicked == "no" and no_var.get() == 1:
+        yes_var.set(0)
+        var.set("no")
+    else:
+        var.set("all")
+
+flag_yes_var = ctk.IntVar(value=0)
+flag_no_var = ctk.IntVar(value=0)
 flag_filter = filter_block(filter_frame, "flag")
-flag_yes = tk.Checkbutton(flag_filter, text="Tak", bg=bg3, borderwidth=0)
-flag_no = tk.Checkbutton(flag_filter, text="Nie", bg=bg3, borderwidth=0)
+flag_yes = ctk.CTkCheckBox(flag_filter, text="Tak", variable=flag_yes_var,
+                           command=lambda: toggle("yes", flag_var, flag_yes_var, flag_no_var),
+                           fg_color=bg3, text_color="black")
+flag_no = ctk.CTkCheckBox(flag_filter, text="Nie", variable=flag_no_var,
+                          command=lambda: toggle("no", flag_var, flag_yes_var, flag_no_var),
+                          fg_color=bg3, text_color="black")
 flag_yes.pack()
 flag_no.pack()
 
+att_yes_var = ctk.IntVar(value=0)
+att_no_var = ctk.IntVar(value=0)
 att_filter = filter_block(filter_frame, "attachments")
-att_yes = tk.Checkbutton(att_filter, text="Tak", bg=bg3, borderwidth=0)
-att_no = tk.Checkbutton(att_filter, text="Nie", bg=bg3, borderwidth=0)
+att_yes = tk.Checkbutton(att_filter, variable=att_yes_var,
+                         command=lambda: toggle("yes", attached_var, att_yes_var, att_no_var),
+                         text="Tak", bg=bg3, borderwidth=0)
+att_no = tk.Checkbutton(att_filter, variable=att_no_var,
+                        command=lambda: toggle("yes", attached_var, att_yes_var, att_no_var),
+                        text="Nie", bg=bg3, borderwidth=0)
 att_yes.pack()
 att_no.pack()
 
@@ -204,9 +237,9 @@ side_filter = filter_block(filter_frame, "strona sporu")
 side_search = AutoEntry(side_filter, Document.dist_sides(), textvariable=sides_var)
 side_search.pack()
 
-type_filter = filter_block(filter_frame, "typ")
-type_search = AutoEntry(type_filter, Document.dist_types())
-type_search.pack()
+doctype_filter = filter_block(filter_frame, "typ")
+doctype_search = AutoEntry(doctype_filter, Document.dist_types(), textvariable=doctype_var)
+doctype_search.pack()
 
 filter_button = ctk.CTkButton(filter_frame, text="filter", command=apply_filters)
 filter_button.pack(anchor='e')
@@ -269,8 +302,8 @@ name_label = tk.Label(add_right, text="nazwa", bg=bg2, font=("", 10, "bold"))
 name_entry = tk.Entry(add_right)
 syg_akt_label = tk.Label(add_right, text="sygnatura akt", bg=bg2, font=("", 10, "bold"))
 syg_akt_entry = tk.Entry(add_right)
-type_label = tk.Label(add_right, text="typ", bg=bg2, font=("", 10, "bold"))
-type_entry = tk.Entry(add_right)
+doctype_label = tk.Label(add_right, text="typ", bg=bg2, font=("", 10, "bold"))
+doctype_entry = tk.Entry(add_right)
 data_label = tk.Label(add_right, text="data", bg=bg2, font=("", 10, "bold"))
 data_entry = tk.Entry(add_right)
 strona1_label = tk.Label(add_right, text="strona skarżąca", bg=bg2, font=("", 10, "bold"))
@@ -286,8 +319,8 @@ name_label.pack(anchor='w')
 name_entry.pack(fill='x', pady=(0,10))
 syg_akt_label.pack(anchor='w')
 syg_akt_entry.pack(fill='x', pady=(0,10))
-type_label.pack(anchor='w')
-type_entry.pack(fill='x', pady=(0,10))
+doctype_label.pack(anchor='w')
+doctype_entry.pack(fill='x', pady=(0, 10))
 data_label.pack(anchor='w')
 data_entry.pack(fill='x', pady=(0,10))
 strona1_label.pack(anchor='w')

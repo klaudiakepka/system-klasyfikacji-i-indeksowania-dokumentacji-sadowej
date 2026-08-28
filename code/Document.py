@@ -7,7 +7,7 @@ class Document:
     def __init__(self, row):
         self.name = row[0]
         self.syg_akt = row[1]
-        self.type = row[2]
+        self.doctype = row[2]
         self.date = row[3]
         self.skarzacy = row[4]
         self.przeciwny = row[5]
@@ -17,9 +17,13 @@ class Document:
         self.flag = row[9]
 
     @classmethod
-    def load(cls, *, name=None, court=None, side=None):
+    def load(cls, *,flag=None, name=None, court=None, side=None, doctype=None):
         query = f"SELECT {cls.col} FROM documents WHERE 1=1"
         params = []
+
+        if flag is not None:
+            query += " AND flag = ?"
+            params.append(int(flag))
 
         if name:
             query += " AND name LIKE ?"
@@ -30,6 +34,9 @@ class Document:
         if side:
             query += " AND (skarzacy LIKE ? OR przeciwny LIKE ?)"
             params.extend([f"%{side}%", f"%{side}%"])
+        if doctype:
+            query += " AND type LIKE ?"
+            params.append(f"%{doctype}%")
 
         query += " ORDER BY date DESC"
 
