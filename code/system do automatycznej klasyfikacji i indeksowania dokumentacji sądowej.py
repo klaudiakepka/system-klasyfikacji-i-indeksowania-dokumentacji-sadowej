@@ -13,8 +13,9 @@ class TkinterDnD_CTk(TkinterDnD.Tk, ctk.CTk):
         self.TkdndVersion = TkinterDnD._require(self)
 
 root = TkinterDnD_CTk()
+ctk.set_appearance_mode("Light")
 root.geometry("1000x600+200+100")
-root.bind_all("<Button-1>", lambda e: None if isinstance(e.widget, tk.Entry) else root.focus())
+root.bind("<Button-1>", lambda e: None if isinstance(e.widget, tk.Entry) else root.focus())
 root.grid_columnconfigure(1, weight=1)
 root.grid_rowconfigure(1, weight=1)
 
@@ -22,9 +23,9 @@ bg1 = "lightpink"
 bg2 = "lightgreen"
 bg3 = "lightblue"
 
-top_frame = tk.Frame(root, pady=10, padx=20, bg=bg1)
-right_frame = tk.Frame(root, bg=bg2, pady=10)
-left_frame = tk.Frame(root, bg=bg3)
+top_frame = ctk.CTkFrame(root, fg_color=bg1)
+right_frame = ctk.CTkFrame(root, fg_color=bg2)
+left_frame = ctk.CTkFrame(root, fg_color=bg3)
 top_frame.grid(row=0, column=1, sticky='nsew')
 top_frame.grid_rowconfigure(0, weight=1)
 top_frame.grid_columnconfigure(0, weight=1)
@@ -99,14 +100,12 @@ def apply_filters(event = None):
         filters["attached"] = True
     elif attached == "no":
         filters["attached"] = False
-
     start_date = start_date_var.get()
     if start_date:
         filters["start_date"] = start_date
     end_date = end_date_var.get()
     if end_date:
         filters["end_date"] = end_date
-
     court = court_var.get().strip()
     if court:
         filters["court"] = court
@@ -119,14 +118,15 @@ def apply_filters(event = None):
 
     refresh(**filters)
 
-main_top = tk.Frame(top_frame, bg=bg1)
-new_button = tk.Button(main_top, text="new", width=10, command=lambda n="add": view(n))
-remove_button_m = tk.Button(main_top, text='remove', width=10, command=remove)
-search_frame = tk.Frame(main_top, bg='white')
-search_entry = ctk.CTkEntry(search_frame, textvariable=name_var, placeholder_text="tytuł pliku", border_width=0)
+main_top = ctk.CTkFrame(top_frame, fg_color=bg1)
+new_button = ctk.CTkButton(main_top, text="new", width=30, command=lambda n="add": view(n))
+remove_button_m = ctk.CTkButton(main_top, text='remove', width=30, command=remove)
+search_frame = ctk.CTkFrame(main_top, fg_color='white')
+search_entry = ctk.CTkEntry(search_frame, textvariable=name_var, border_width=0, fg_color="white")
 search_entry.bind("<Return>", apply_filters)
-search_button = tk.Button(search_frame, bd=0, bg='white', text='🔍', command=apply_filters)
-main_top.grid(row=0, column=0, sticky="nsew")
+search_button = ctk.CTkButton(search_frame, border_width=0, fg_color='white', text='🔍', command=apply_filters,
+                              width=5, text_color="black")
+main_top.grid(row=0, column=0, sticky="nsew", padx=20, pady=10)
 new_button.pack(side='right', padx=(10, 0))
 remove_button_m.pack(side='right', padx=(0, 10))
 search_frame.pack(side='left')
@@ -134,21 +134,21 @@ search_entry.pack(side='right')
 search_button.pack()
 #----------------------------------------------------------------------------------------------------------------------------
 
-add_top = tk.Frame(top_frame, bg=bg1)
-cancel_button_a = tk.Button(add_top, text="cancel", width=10, command=lambda n="main": view(n))
-add_label = tk.Label(add_top, text="Dodaj nowy dokumet", font=("",15), bg=bg1)
-add_button = tk.Button(add_top, text="add", width=10)
-add_top.grid(row=0, column=0, sticky="nsew")
+add_top = ctk.CTkFrame(top_frame, fg_color=bg1)
+cancel_button_a = ctk.CTkButton(add_top, text="cancel", width=10, command=lambda n="main": view(n))
+add_label = ctk.CTkLabel(add_top, text="Dodaj nowy dokumet", font=("",15), fg_color=bg1)
+add_button = ctk.CTkButton(add_top, text="add", width=10)
+add_top.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
 cancel_button_a.pack(side="left")
 add_label.pack(side="left", expand=True)
 add_button.pack(side="right")
 #----------------------------------------------------------------------------------------------------------------------------
 
-edit_top = tk.Frame(top_frame, bg=bg1)
-remove_button_e = tk.Button(edit_top, text="remove", width=10)
-save_button = tk.Button(edit_top, text="save", width=10)
-cancel_button_e = tk.Button(edit_top, text="cancel", width=10, command=lambda n="main": view(n))
-edit_top.grid(row=0, column=0, sticky="nsew")
+edit_top = ctk.CTkFrame(top_frame, fg_color=bg1)
+remove_button_e = ctk.CTkButton(edit_top, text="remove", width=10)
+save_button = ctk.CTkButton(edit_top, text="save", width=10)
+cancel_button_e = ctk.CTkButton(edit_top, text="cancel", width=10, command=lambda n="main": view(n))
+edit_top.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
 remove_button_e.pack(side="right", padx=(10,0))
 save_button.pack(side="right", padx=(0,10))
 cancel_button_e.pack(side="left")
@@ -157,7 +157,7 @@ cancel_button_e.pack(side="left")
 
 
 main_left = tk.Canvas(left_frame, highlightthickness=0, bg=bg3)
-filter_frame = tk.Frame(main_left, bg=bg3)
+filter_frame = ctk.CTkFrame(main_left, fg_color=bg3)
 main_left.grid(row=0, column=0, sticky="nesw", pady=20, padx=(10, 0))
 main_left.create_window(0, 0, window=filter_frame, anchor="nw")
 filter_frame.bind("<Configure>", lambda e: main_left.config(width=e.width))
@@ -166,16 +166,16 @@ def filter_block(parent, title):
     def toggle_visibility():
         if content.winfo_ismapped():
             content.pack_forget()
-            header.config(text=f"▶ {title}")
+            header.configure(text=f"▶ {title}")
         else:
             content.pack(anchor="w", padx=(20,0), pady=(5,0), after=header)
-            header.config(text=f"▼ {title}")
+            header.configure(text=f"▼ {title}")
 
-    header = tk.Button(parent, text=f"▶ {title}", width=30, anchor="w", borderwidth=0, bg=bg3,
-                       activebackground=bg3, command=toggle_visibility)
+    header = ctk.CTkButton(parent, text=f"▶ {title}", width=200, anchor="w", border_width=0, fg_color=bg3,
+                       hover_color=bg3, command=toggle_visibility)
     header.pack()
     ttk.Separator(parent, orient="horizontal").pack(fill='x', padx=10, pady=5)
-    content = tk.Frame(parent, bg=bg3)
+    content = ctk.CTkFrame(parent, fg_color=bg3)
     return content
 
 def toggle(clicked, var, yes_var, no_var):
@@ -187,13 +187,15 @@ def toggle(clicked, var, yes_var, no_var):
         var.set("no")
     else:
         var.set("all")
+        no_var.set(0)
+        yes_var.set(0)
 
 flag_yes_var = ctk.IntVar(value=0)
 flag_no_var = ctk.IntVar(value=0)
 flag_filter = filter_block(filter_frame, "flag")
-flag_yes = ctk.CTkCheckBox(flag_filter, text="Tak", variable=flag_yes_var, fg_color=bg3, text_color="black",
+flag_yes = ctk.CTkCheckBox(flag_filter, text="Tak", variable=flag_yes_var, fg_color=bg3,
                            command=lambda: toggle("yes", flag_var, flag_yes_var, flag_no_var))
-flag_no = ctk.CTkCheckBox(flag_filter, text="Nie", variable=flag_no_var, fg_color=bg3, text_color="black",
+flag_no = ctk.CTkCheckBox(flag_filter, text="Nie", variable=flag_no_var, fg_color=bg3,
                           command=lambda: toggle("no", flag_var, flag_yes_var, flag_no_var))
 flag_yes.pack()
 flag_no.pack()
@@ -209,25 +211,21 @@ att_yes.pack()
 att_no.pack()
 
 def clear_date():
-    start_date_entry.config(state='normal')
-    start_date_entry.delete(0, 'end')
-    start_date_entry.config(state='readonly')
-
-    end_date_entry.config(state='normal')
-    end_date_entry.delete(0, 'end')
-    end_date_entry.config(state='readonly')
-
+    start_date_var.set("")
+    end_date_var.set("")
 date_filter = filter_block(filter_frame, "data")
-input_block = tk.Frame(date_filter, bg=bg3)
+input_block = ctk.CTkFrame(date_filter, fg_color=bg3)
 start_date_entry = DateEntry(input_block, width=9, font=('Inter', 8), locale='pl_PL', showweeknumbers=False,
-                             showothermonthdays=False, state="readonly")
+                             showothermonthdays=False, state="readonly", textvariable=start_date_var,
+                             date_pattern='yyyy-mm-dd')
 end_date_entry = DateEntry(input_block, width=9, font=('Helvetica', 8), locale='pl_PL', showweeknumbers=False,
-                           showothermonthdays=False, state="readonly")
-spacing = tk.Label(input_block, text='-', bg=bg3)
-clear_button = tk.Button(date_filter, text="clear", command=clear_date)
+                           showothermonthdays=False, state="readonly", textvariable=end_date_var,
+                           date_pattern="yyyy-mm-dd")
+spacing = ctk.CTkLabel(input_block, text='-', fg_color=bg3)
+clear_button = ctk.CTkButton(date_filter, text="clear", command=clear_date)
 input_block.pack(expand=True)
 start_date_entry.pack(side="left")
-spacing.pack(side="left")
+spacing.pack(side="left", padx=5)
 end_date_entry.pack(side="left")
 clear_button.pack(anchor='w', pady=(5,0), padx=5)
 clear_date()
@@ -244,23 +242,37 @@ doctype_filter = filter_block(filter_frame, "typ")
 doctype_search = AutoEntry(doctype_filter, Document.dist_types(), textvariable=doctype_var)
 doctype_search.pack()
 
-filter_button = ctk.CTkButton(filter_frame, text="filter", command=apply_filters)
-filter_button.pack(anchor='e')
+
+def clear_filters():
+    toggle("all", flag_var, flag_yes_var, flag_no_var)
+    toggle("all", attached_var, att_yes_var, att_no_var)
+    start_date_var.set("")
+    end_date_var.set("")
+    court_var.set("")
+    sides_var.set("")
+    doctype_var.set("")
+    refresh()
+button_frame = ctk.CTkFrame(filter_frame, fg_color=bg3)
+use_filters = ctk.CTkButton(button_frame, text="filter", command=apply_filters, width=30)
+clear_filters = ctk.CTkButton(button_frame, text="clear", command=clear_filters, width=30)
+button_frame.pack(expand=True, fill='x')
+use_filters.pack(side="right", padx=10)
+clear_filters.pack(side="right")
 #----------------------------------------------------------------------------------------------------------------------------
 
-add_left = tk.Frame(left_frame, bg=bg3)
+add_left = ctk.CTkFrame(left_frame, fg_color=bg3)
 
 def add_doc(filepaths):
     return
 
-drop_box_frame = tk.Frame(add_left, bg=bg3)
+drop_box_frame = ctk.CTkFrame(add_left, fg_color=bg3)
 drop_box = DropBox(drop_box_frame, on_drop=add_doc)
 drop_box_frame.pack(expand=True)
 drop_box.pack(padx=20)
 add_left.grid(row=0, column=0, sticky="nesw")
 #----------------------------------------------------------------------------------------------------------------------------
 
-edit_left = tk.Frame(left_frame, bg=bg3, width=400)
+edit_left = ctk.CTkFrame(left_frame, fg_color=bg3, width=400)
 edit_left.grid(row=0, column=0, sticky="nesw")
 #----------------------------------------------------------------------------------------------------------------------------
 
@@ -300,23 +312,23 @@ def refresh(**filters):
 #----------------------------------------------------------------------------------------------------------------------------
 
 add_right = ctk.CTkScrollableFrame(right_frame, fg_color=bg2)
-ai_switch = ctk.CTkSwitch(add_right, text="auto fill", text_color="black")
-name_label = tk.Label(add_right, text="nazwa", bg=bg2, font=("", 10, "bold"))
-name_entry = tk.Entry(add_right)
-syg_akt_label = tk.Label(add_right, text="sygnatura akt", bg=bg2, font=("", 10, "bold"))
-syg_akt_entry = tk.Entry(add_right)
-doctype_label = tk.Label(add_right, text="typ", bg=bg2, font=("", 10, "bold"))
-doctype_entry = tk.Entry(add_right)
-data_label = tk.Label(add_right, text="data", bg=bg2, font=("", 10, "bold"))
-data_entry = tk.Entry(add_right)
-strona1_label = tk.Label(add_right, text="strona skarżąca", bg=bg2, font=("", 10, "bold"))
-strona1_entry = tk.Entry(add_right)
-strona2_label = tk.Label(add_right, text="strona przeciwna", bg=bg2, font=("", 10, "bold"))
-strona2_entry = tk.Entry(add_right)
-court_label = tk.Label(add_right, text="sąd", bg=bg2, font=("", 10, "bold"))
-court_entry = tk.Entry(add_right)
-desc_label = tk.Label(add_right, text="opis", bg=bg2, font=("", 10, "bold"))
-desc_entry = tk.Text(add_right, height=5)
+ai_switch = ctk.CTkSwitch(add_right, text="auto fill")
+name_label = ctk.CTkLabel(add_right, text="nazwa", fg_color=bg2)
+name_entry = ctk.CTkEntry(add_right)
+syg_akt_label = ctk.CTkLabel(add_right, text="sygnatura akt", fg_color=bg2)
+syg_akt_entry = ctk.CTkEntry(add_right)
+doctype_label = ctk.CTkLabel(add_right, text="typ", fg_color=bg2)
+doctype_entry = ctk.CTkEntry(add_right)
+data_label = ctk.CTkLabel(add_right, text="data", fg_color=bg2)
+data_entry = ctk.CTkEntry(add_right)
+strona1_label = ctk.CTkLabel(add_right, text="strona skarżąca", fg_color=bg2)
+strona1_entry = ctk.CTkEntry(add_right)
+strona2_label = ctk.CTkLabel(add_right, text="strona przeciwna", fg_color=bg2)
+strona2_entry = ctk.CTkEntry(add_right)
+court_label = ctk.CTkLabel(add_right, text="sąd", fg_color=bg2)
+court_entry = ctk.CTkEntry(add_right)
+desc_label = ctk.CTkLabel(add_right, text="opis", fg_color=bg2)
+desc_entry = ctk.CTkTextbox(add_right, height=20)
 add_right.grid(row=0, column=0, sticky="nsew", padx=(20,0))
 name_label.pack(anchor='w')
 name_entry.pack(fill='x', pady=(0,10))

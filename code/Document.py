@@ -29,6 +29,16 @@ class Document:
             query += " AND attached = ?"
             params.append(int(attached))
 
+        if start_date and end_date:
+            query += " AND date BETWEEN ? AND ?"
+            params.extend([start_date, end_date])
+        elif start_date:
+            query += " AND date >= ?"
+            params.append(start_date)
+        elif end_date:
+            query += " AND date <= ?"
+            params.append(end_date)
+
         if name:
             query += " AND name LIKE ?"
             params.append(f"%{name}%")
