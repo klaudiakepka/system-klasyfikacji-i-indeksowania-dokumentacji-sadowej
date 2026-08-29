@@ -12,6 +12,8 @@ class TkinterDnD_CTk(TkinterDnD.Tk, ctk.CTk):
         ctk.CTk.__init__(self, *args, **kwargs)
         self.TkdndVersion = TkinterDnD._require(self)
 
+ctk.ThemeManager.theme["CTkButton"]["text_color"] = "black"
+
 root = TkinterDnD_CTk()
 ctk.set_appearance_mode("Light")
 root.geometry("1000x600+200+100")
@@ -124,8 +126,7 @@ remove_button_m = ctk.CTkButton(main_top, text='remove', width=30, command=remov
 search_frame = ctk.CTkFrame(main_top, fg_color='white')
 search_entry = ctk.CTkEntry(search_frame, textvariable=name_var, border_width=0, fg_color="white")
 search_entry.bind("<Return>", apply_filters)
-search_button = ctk.CTkButton(search_frame, border_width=0, fg_color='white', text='🔍', command=apply_filters,
-                              width=5, text_color="black")
+search_button = ctk.CTkButton(search_frame, border_width=0, fg_color='white', text='🔍', command=apply_filters, width=5)
 main_top.grid(row=0, column=0, sticky="nsew", padx=20, pady=10)
 new_button.pack(side='right', padx=(10, 0))
 remove_button_m.pack(side='right', padx=(0, 10))
@@ -215,10 +216,10 @@ def clear_date():
     end_date_var.set("")
 date_filter = filter_block(filter_frame, "data")
 input_block = ctk.CTkFrame(date_filter, fg_color=bg3)
-start_date_entry = DateEntry(input_block, width=9, font=('Inter', 8), locale='pl_PL', showweeknumbers=False,
+start_date_entry = DateEntry(input_block, font=('Inter', 8), locale='pl_PL', showweeknumbers=False,
                              showothermonthdays=False, state="readonly", textvariable=start_date_var,
                              date_pattern='yyyy-mm-dd')
-end_date_entry = DateEntry(input_block, width=9, font=('Helvetica', 8), locale='pl_PL', showweeknumbers=False,
+end_date_entry = DateEntry(input_block, font=('Helvetica', 8), locale='pl_PL', showweeknumbers=False,
                            showothermonthdays=False, state="readonly", textvariable=end_date_var,
                            date_pattern="yyyy-mm-dd")
 spacing = ctk.CTkLabel(input_block, text='-', fg_color=bg3)
@@ -231,15 +232,15 @@ clear_button.pack(anchor='w', pady=(5,0), padx=5)
 clear_date()
 
 court_filter = filter_block(filter_frame, "sąd")
-court_search = AutoEntry(court_filter, Document.dist_courts(), textvariable=court_var)
+court_search = AutoEntry(court_filter, Document.dist_courts(), textvariable=court_var, font=("", 12))
 court_search.pack()
 
 side_filter = filter_block(filter_frame, "strona sporu")
-side_search = AutoEntry(side_filter, Document.dist_sides(), textvariable=sides_var)
+side_search = AutoEntry(side_filter, Document.dist_sides(), textvariable=sides_var, font=("", 12))
 side_search.pack()
 
 doctype_filter = filter_block(filter_frame, "typ")
-doctype_search = AutoEntry(doctype_filter, Document.dist_types(), textvariable=doctype_var)
+doctype_search = AutoEntry(doctype_filter, Document.dist_types(), textvariable=doctype_var, font=("", 12))
 doctype_search.pack()
 
 
