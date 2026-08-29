@@ -74,9 +74,6 @@ def view(name):
 
 #----------------------------------------------------------------------------------------------------------------------------
 
-def remove():
-    return '.'
-
 name_var = ctk.StringVar()
 flag_var = ctk.StringVar(value="all")
 attached_var = ctk.StringVar(value="all")
@@ -122,7 +119,7 @@ def apply_filters(event = None):
 
 main_top = ctk.CTkFrame(top_frame, fg_color=bg1)
 new_button = ctk.CTkButton(main_top, text="new", width=30, command=lambda n="add": view(n))
-remove_button_m = ctk.CTkButton(main_top, text='remove', width=30, command=remove)
+remove_button_m = ctk.CTkButton(main_top, text='remove', width=30)
 search_frame = ctk.CTkFrame(main_top, fg_color='white')
 search_entry = ctk.CTkEntry(search_frame, textvariable=name_var, border_width=0, fg_color="white")
 search_entry.bind("<Return>", apply_filters)
@@ -291,13 +288,13 @@ def doc_block_build(doc, parent):
     main_button = ctk.CTkButton(doc_block, text=doc.name, anchor='w', command=lambda n="edit": view(n))
     flag_button = ctk.CTkButton(doc_block, text="⚑", width=30, text_color="red" if doc.flag else "gray",
                                 command=_toggle_flag)
-    checkbox = ctk.CTkCheckBox(doc_block, text="", width=0)
+    checkbox = ctk.CTkCheckBox(doc_block, text="", width=0, command=lambda: doc.checkbox_state(checkbox.get()))
     doc_block.pack(fill='x', padx=2)
     main_button.pack(side="left", fill='x', expand=True)
     flag_button.pack(side="right")
     checkbox.pack(side="right")
 
-    return doc_block
+    return checkbox
 
 def refresh(**filters):
     for child in main_right.winfo_children():
@@ -309,7 +306,13 @@ def refresh(**filters):
         empty_label.pack(expand=True, fill='x')
         return
     for document in documents:
-        block = doc_block_build(document, main_right)
+        doc_block_build(document, main_right)
+
+    def remove():
+        for doc in documents:
+            doc.remove()
+        refresh()
+    remove_button_m.configure(command=remove)
 #----------------------------------------------------------------------------------------------------------------------------
 
 add_right = ctk.CTkScrollableFrame(right_frame, fg_color=bg2)

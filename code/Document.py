@@ -15,6 +15,7 @@ class Document:
         self.desc = row[7]
         self.attached = row[8]
         self.flag = row[9]
+        self.to_remove = False
 
     @classmethod
     def load(cls, *, flag=None, attached=None, start_date=None, end_date=None, name=None, court=None,
@@ -97,3 +98,16 @@ class Document:
             conn.commit()
         finally:
             conn.close()
+
+    def checkbox_state(self, state):
+        self.to_remove = (state == 1)
+
+    def remove(self):
+        if self.to_remove:
+            conn = sqlite3.connect(Document.path)
+            try:
+                conn.execute("DELETE FROM documents WHERE name = ?", (self.name,))
+                conn.commit()
+            finally:
+                conn.close()
+            return self.name
