@@ -4,6 +4,9 @@ from tkcalendar import DateEntry
 import customtkinter as ctk
 from tkinterdnd2 import TkinterDnD, DND_FILES
 from datetime import datetime
+import shutil
+from pathlib import Path
+
 from Document import Document
 from AutoEntry import AutoEntry
 from DropBox import DropBox
@@ -297,8 +300,24 @@ clear_filters.pack(side="right")
 
 add_left = ctk.CTkFrame(left_frame, fg_color=bg3)
 
+path = Path("./data")
+def go_to_path(folder: Path, name: str) -> Path:
+    dest = folder / name
+    if not dest.exists():
+        return dest
+    stem, suffix = dest.stem, dest.suffix
+    i = 1
+    while dest.exists():
+        dest = folder / f"{stem} ({i}){suffix}"
+        i += 1
+    return dest
+
 def add_doc(filepaths):
-    return
+    path.mkdir(parents=True, exist_ok=True)
+    for filepath in filepaths:
+        src = Path(filepath)
+        dest = go_to_path(path, src.name)
+        shutil.copy2(src, dest)
 
 drop_box_frame = ctk.CTkFrame(add_left, fg_color=bg3)
 drop_box = DropBox(drop_box_frame, on_drop=add_doc)
