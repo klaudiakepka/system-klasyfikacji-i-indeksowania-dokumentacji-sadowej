@@ -143,7 +143,6 @@ def add():
     if not name or not syg_akt:
         print("nie uzupełnione")
         return False
-
     data = {"name": name, "syg_akt": syg_akt}
     if doctype:
         data.update({"doctype": doctype})
