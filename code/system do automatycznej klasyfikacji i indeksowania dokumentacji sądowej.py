@@ -6,21 +6,19 @@ from tkinterdnd2 import TkinterDnD, DND_FILES
 from Document import Document
 from AutoEntry import AutoEntry
 from DropBox import DropBox
-
 class TkinterDnD_CTk(TkinterDnD.Tk, ctk.CTk):
     def __init__(self, *args, **kwargs):
         ctk.CTk.__init__(self, *args, **kwargs)
         self.TkdndVersion = TkinterDnD._require(self)
 
-ctk.ThemeManager.theme["CTkButton"]["text_color"] = "black"
-
 root = TkinterDnD_CTk()
 ctk.set_appearance_mode("Light")
-root.geometry("1000x600+200+100")
+root.geometry("1000x650+200+100")
 root.bind("<Button-1>", lambda e: None if isinstance(e.widget, tk.Entry) else root.focus())
 root.grid_columnconfigure(1, weight=1)
 root.grid_rowconfigure(1, weight=1)
 
+ctk.ThemeManager.theme["CTkButton"]["text_color"] = "black"
 bg1 = "lightpink"
 bg2 = "lightgreen"
 bg3 = "lightblue"
@@ -133,7 +131,35 @@ search_button.pack()
 #----------------------------------------------------------------------------------------------------------------------------
 
 def add():
-    Document.add()
+    name = name_entry.get().strip()
+    syg_akt = syg_akt_entry.get().strip()
+    doctype = doctype_entry.get().strip()
+    date = ''
+    side1 = side1_entry.get().strip()
+    side2 = side2_entry.get().strip()
+    court = court_entry.get().strip()
+    desc = desc_entry.get("1.0", "end-1c"`).strip()
+
+    if not name or not syg_akt:
+        print("nie uzupełnione")
+        return False
+
+    data = {"name": name, "syg_akt": syg_akt}
+    if doctype:
+        data.update({"doctype": doctype})
+    if date:
+        data.update({"date": date})
+    if side1:
+        data.update({"side1": side1})
+    if side2:
+        data.update({"side2": side2})
+    if court:
+        data.update({"court": court})
+    if desc:
+        data.update({"desc": desc})
+
+    print(data)
+    # Document.add(**data)
 
 add_top = ctk.CTkFrame(top_frame, fg_color=bg1)
 cancel_button_a = ctk.CTkButton(add_top, text="cancel", width=10, command=lambda n="main": view(n))
@@ -326,12 +352,12 @@ syg_akt_label = ctk.CTkLabel(add_right, text="sygnatura akt", fg_color=bg2)
 syg_akt_entry = ctk.CTkEntry(add_right)
 doctype_label = ctk.CTkLabel(add_right, text="typ", fg_color=bg2)
 doctype_entry = ctk.CTkEntry(add_right)
-data_label = ctk.CTkLabel(add_right, text="data", fg_color=bg2)
-data_entry = ctk.CTkEntry(add_right)
-strona1_label = ctk.CTkLabel(add_right, text="strona skarżąca", fg_color=bg2)
-strona1_entry = ctk.CTkEntry(add_right)
-strona2_label = ctk.CTkLabel(add_right, text="strona przeciwna", fg_color=bg2)
-strona2_entry = ctk.CTkEntry(add_right)
+date_label = ctk.CTkLabel(add_right, text="data", fg_color=bg2)
+date_entry = ctk.CTkEntry(add_right)
+side1_label = ctk.CTkLabel(add_right, text="strona skarżąca", fg_color=bg2)
+side1_entry = ctk.CTkEntry(add_right)
+side2_label = ctk.CTkLabel(add_right, text="strona przeciwna", fg_color=bg2)
+side2_entry = ctk.CTkEntry(add_right)
 court_label = ctk.CTkLabel(add_right, text="sąd", fg_color=bg2)
 court_entry = ctk.CTkEntry(add_right)
 desc_label = ctk.CTkLabel(add_right, text="opis", fg_color=bg2)
@@ -343,12 +369,12 @@ syg_akt_label.pack(anchor='w')
 syg_akt_entry.pack(fill='x', pady=(0,10))
 doctype_label.pack(anchor='w')
 doctype_entry.pack(fill='x', pady=(0, 10))
-data_label.pack(anchor='w')
-data_entry.pack(fill='x', pady=(0,10))
-strona1_label.pack(anchor='w')
-strona1_entry.pack(fill='x', pady=(0,10))
-strona2_label.pack(anchor='w')
-strona2_entry.pack(fill='x', pady=(0,10))
+date_label.pack(anchor='w')
+date_entry.pack(fill='x', pady=(0, 10))
+side1_label.pack(anchor='w')
+side1_entry.pack(fill='x', pady=(0, 10))
+side2_label.pack(anchor='w')
+side2_entry.pack(fill='x', pady=(0, 10))
 court_label.pack(anchor='w')
 court_entry.pack(fill='x', pady=(0,10))
 desc_label.pack(anchor='w')
