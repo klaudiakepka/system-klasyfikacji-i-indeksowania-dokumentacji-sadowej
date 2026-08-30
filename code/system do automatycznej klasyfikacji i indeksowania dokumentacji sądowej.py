@@ -138,7 +138,7 @@ def add():
     side1 = side1_entry.get().strip()
     side2 = side2_entry.get().strip()
     court = court_entry.get().strip()
-    desc = desc_entry.get("1.0", "end-1c"`).strip()
+    desc = desc_entry.get("1.0", "end-1c").strip()
 
     if not name or not syg_akt:
         print("nie uzupełnione")
