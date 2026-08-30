@@ -118,7 +118,7 @@ class Document:
             cursor = conn.cursor()
             cursor.execute("SELECT 1 FROM documents WHERE name = ?", (name,))
             if cursor.fetchone() is not None:
-                return "document exist"
+                return "dokument o tej nazwie już istnieje"
 
             cursor.execute("INSERT INTO documents (name, syg_akt, type, date, skarzacy, przeciwny, "
                            "sad, desc, attached) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
@@ -126,3 +126,4 @@ class Document:
             conn.commit()
         finally:
             conn.close()
+        return ""

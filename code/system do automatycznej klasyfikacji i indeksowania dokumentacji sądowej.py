@@ -3,6 +3,7 @@ from tkinter import ttk
 from tkcalendar import DateEntry
 import customtkinter as ctk
 from tkinterdnd2 import TkinterDnD, DND_FILES
+from datetime import datetime
 from Document import Document
 from AutoEntry import AutoEntry
 from DropBox import DropBox
@@ -47,6 +48,8 @@ def view(name):
         add_left.grid_remove()
         edit_top.grid_remove()
         edit_left.grid_remove()
+        error_label.configure(text="")
+        refresh()
     elif name == "add":
         top_frame.grid(column=0, columnspan=2)
         add_top.grid()
@@ -134,31 +137,36 @@ def add():
     name = name_entry.get().strip()
     syg_akt = syg_akt_entry.get().strip()
     doctype = doctype_entry.get().strip()
-    date = ''
+    date = date_entry.get()
     side1 = side1_entry.get().strip()
     side2 = side2_entry.get().strip()
     court = court_entry.get().strip()
     desc = desc_entry.get("1.0", "end-1c").strip()
 
     if not name or not syg_akt:
-        print("nie uzupełnione")
+        error_label.configure(text="nie wprowadzono nazwy lub sygnatury akt")
         return False
     data = {"name": name, "syg_akt": syg_akt}
     if doctype:
         data.update({"doctype": doctype})
     if date:
-        data.update({"date": date})
+        try:
+            date = datetime.strptime(date, "%Y-%m-%d").date()
+            data.update({"date": date})
+        except ValueError:
+            error_label.configure(text="niepoprawnie wpisana data")
+            return False
     if side1:
-        data.update({"side1": side1})
+        data.update({"skarzacy": side1})
     if side2:
-        data.update({"side2": side2})
+        data.update({"przeciwny": side2})
     if court:
-        data.update({"court": court})
+        data.update({"sad": court})
     if desc:
         data.update({"desc": desc})
 
-    print(data)
-    # Document.add(**data)
+    error_label.configure(text=Document.add(**data))
+    clear_add_form()
 
 add_top = ctk.CTkFrame(top_frame, fg_color=bg1)
 cancel_button_a = ctk.CTkButton(add_top, text="cancel", width=10, command=lambda n="main": view(n))
@@ -343,6 +351,27 @@ def refresh(**filters):
     remove_button_m.configure(command=remove)
 #----------------------------------------------------------------------------------------------------------------------------
 
+def clear_add_form():
+    if name_entry.get():
+        name_entry.delete(0, "end")
+    if syg_akt_entry.get():
+        syg_akt_entry.delete(0, "end")
+    if doctype_entry.get():
+        doctype_entry.delete(0, "end")
+    if date_entry.get():
+        date_entry.delete(0, "end")
+    if side1_entry.get():
+        side1_entry.delete(0, "end")
+    if side2_entry.get():
+        side2_entry.delete(0, "end")
+    if court_entry.get():
+        court_entry.delete(0, "end")
+    if desc_entry.get("1.0", "end-1c"):
+        desc_entry.delete("1.0", "end")
+
+def fill_add_form():
+
+
 add_right = ctk.CTkScrollableFrame(right_frame, fg_color=bg2)
 ai_switch = ctk.CTkSwitch(add_right, text="auto fill")
 name_label = ctk.CTkLabel(add_right, text="nazwa", fg_color=bg2)
@@ -352,7 +381,7 @@ syg_akt_entry = ctk.CTkEntry(add_right)
 doctype_label = ctk.CTkLabel(add_right, text="typ", fg_color=bg2)
 doctype_entry = ctk.CTkEntry(add_right)
 date_label = ctk.CTkLabel(add_right, text="data", fg_color=bg2)
-date_entry = ctk.CTkEntry(add_right)
+date_entry = ctk.CTkEntry(add_right, placeholder_text="YYYY-MM-DD")
 side1_label = ctk.CTkLabel(add_right, text="strona skarżąca", fg_color=bg2)
 side1_entry = ctk.CTkEntry(add_right)
 side2_label = ctk.CTkLabel(add_right, text="strona przeciwna", fg_color=bg2)
@@ -360,24 +389,26 @@ side2_entry = ctk.CTkEntry(add_right)
 court_label = ctk.CTkLabel(add_right, text="sąd", fg_color=bg2)
 court_entry = ctk.CTkEntry(add_right)
 desc_label = ctk.CTkLabel(add_right, text="opis", fg_color=bg2)
-desc_entry = ctk.CTkTextbox(add_right, height=20)
+desc_entry = ctk.CTkTextbox(add_right, height=70)
+error_label = ctk.CTkLabel(add_right, text_color="red", text="", font=("", 15, "bold"))
 add_right.grid(row=0, column=0, sticky="nsew", padx=(20,0))
 name_label.pack(anchor='w')
-name_entry.pack(fill='x', pady=(0,10))
+name_entry.pack(fill='x', pady=(0,5))
 syg_akt_label.pack(anchor='w')
-syg_akt_entry.pack(fill='x', pady=(0,10))
+syg_akt_entry.pack(fill='x', pady=(0,5))
 doctype_label.pack(anchor='w')
-doctype_entry.pack(fill='x', pady=(0, 10))
+doctype_entry.pack(fill='x', pady=(0,5))
 date_label.pack(anchor='w')
-date_entry.pack(fill='x', pady=(0, 10))
+date_entry.pack(fill='x', pady=(0,5))
 side1_label.pack(anchor='w')
-side1_entry.pack(fill='x', pady=(0, 10))
+side1_entry.pack(fill='x', pady=(0,5))
 side2_label.pack(anchor='w')
-side2_entry.pack(fill='x', pady=(0, 10))
+side2_entry.pack(fill='x', pady=(0,5))
 court_label.pack(anchor='w')
-court_entry.pack(fill='x', pady=(0,10))
+court_entry.pack(fill='x', pady=(0,5))
 desc_label.pack(anchor='w')
-desc_entry.pack(fill='x', pady=(0,10))
+desc_entry.pack(fill='x', pady=(0,5))
+error_label.pack(fill='x')
 ai_switch.pack(anchor='w')
 #----------------------------------------------------------------------------------------------------------------------------
 
