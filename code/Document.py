@@ -1,4 +1,5 @@
 import sqlite3
+from datetime import date
 
 class Document:
     col = "name, syg_akt, type, date, skarzacy, przeciwny, sad, desc, attached, flag"
@@ -90,27 +91,6 @@ class Document:
             conn.close()
         return [row[0] for row in rows]
 
-    def toggle_flag(self):
-        self.flag = not self.flag
-        conn = sqlite3.connect(Document.path)
-        try:
-            conn.execute("UPDATE documents SET flag = ? WHERE name = ?", (self.flag, self.name))
-            conn.commit()
-        finally:
-            conn.close()
-
-    def checkbox_state(self, state):
-        self.to_remove = (state == 1)
-
-    def remove(self):
-        if self.to_remove:
-            conn = sqlite3.connect(Document.path)
-            try:
-                conn.execute("DELETE FROM documents WHERE name = ?", (self.name,))
-                conn.commit()
-            finally:
-                conn.close()
-
     @classmethod
     def add(cls, name, syg_akt, doctype='', date=None, skarzacy='', przeciwny='', sad='', desc='', attached=0):
         conn = sqlite3.connect(cls.path)
@@ -127,3 +107,79 @@ class Document:
         finally:
             conn.close()
         return ""
+
+    def toggle_flag(self):
+        self.flag = not self.flag
+        conn = sqlite3.connect(Document.path)
+        try:
+            conn.execute("UPDATE documents SET flag = ? WHERE name = ?", (self.flag, self.name))
+            conn.commit()
+        finally:
+            conn.close()
+
+    def checkbox_state(self, state):
+        self.to_remove = (state == 1)
+
+    def remove_check(self):
+        if self.to_remove:
+            self.remove()
+
+    def remove(self):
+        conn = sqlite3.connect(Document.path)
+        try:
+            conn.execute("DELETE FROM documents WHERE name = ?", (self.name,))
+            conn.commit()
+        finally:
+            conn.close()
+
+    def change(self, name, syg_akt, doctype='', date='', skarzacy='', przeciwny='', court='', desc=''):
+        conn = sqlite3.connect(Document.path)
+        try:
+            cursor = conn.cursor()
+            changes = []
+            params = []
+            old_name = self.name
+
+            if name != self.name:
+                cursor.execute("SELECT 1 FROM documents WHERE name = ?", (name,))
+                if cursor.fetchone() is not None:
+                    return "dokument o tej nazwie już istnieje"
+                changes.append("name = ?")
+                params.append(name)
+                self.name = name
+            if syg_akt != self.syg_akt:
+                changes.append("syg_akt = ?")
+                params.append(syg_akt)
+                self.syg_akt = syg_akt
+            if doctype != self.doctype:
+                changes.append("type = ?")
+                params.append(doctype)
+                self.doctype = doctype
+            if date.isoformat() != self.date:
+                changes.append("date = ?")
+                params.append(date.isoformat())
+                self.date = date.isoformat()
+            if skarzacy != self.skarzacy:
+                changes.append("skarzacy = ?")
+                params.append(skarzacy)
+                self.skarzacy = skarzacy
+            if przeciwny != self.przeciwny:
+                changes.append("przeciwny = ?")
+                params.append(przeciwny)
+                self.przeciwny = przeciwny
+            if court != self.court:
+                changes.append("sad = ?")
+                params.append(court)
+                self.court = court
+            if desc != self.desc:
+                changes.append("desc = ?")
+                params.append(desc)
+                self.desc = desc
+            params.append(old_name)
+
+            cursor.execute(f"UPDATE documents SET {', '.join(changes)} WHERE name = ?", params)
+            conn.commit()
+        finally:
+            conn.close()
+        return ""
+

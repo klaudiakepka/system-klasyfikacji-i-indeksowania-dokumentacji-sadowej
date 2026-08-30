@@ -49,6 +49,7 @@ def view(name):
         edit_top.grid_remove()
         edit_left.grid_remove()
         error_label.configure(text="")
+        clear_add_form()
         refresh()
     elif name == "add":
         top_frame.grid(column=0, columnspan=2)
@@ -320,8 +321,51 @@ def doc_block_build(doc, parent):
         doc.toggle_flag()
         flag_button.configure(text_color="red" if doc.flag else "gray")
 
+    def view_class():
+        def remove_doc(doc_class):
+            doc_class.remove()
+            view("main")
+
+        def edit_doc(doc_class):
+            name = name_entry.get().strip()
+            syg_akt = syg_akt_entry.get().strip()
+            doctype = doctype_entry.get().strip()
+            date = date_entry.get()
+            side1 = side1_entry.get().strip()
+            side2 = side2_entry.get().strip()
+            court = court_entry.get().strip()
+            desc = desc_entry.get("1.0", "end-1c").strip()
+
+            if not name or not syg_akt:
+                error_label.configure(text="nie wprowadzono nazwy lub sygnatury akt")
+                return False
+            data = {"name": name, "syg_akt": syg_akt}
+            if doctype:
+                data.update({"doctype": doctype})
+            if date:
+                try:
+                    date = datetime.strptime(date, "%Y-%m-%d").date()
+                    data.update({"date": date})
+                except ValueError:
+                    error_label.configure(text="niepoprawnie wpisana data")
+                    return False
+            if side1:
+                data.update({"skarzacy": side1})
+            if side2:
+                data.update({"przeciwny": side2})
+            if court:
+                data.update({"court": court})
+            if desc:
+                data.update({"desc": desc})
+            error_label.configure(text=doc_class.change(**data))
+
+        view("edit")
+        fill_add_form(doc)
+        remove_button_e.configure(command=lambda d=doc: remove_doc(d))
+        save_button.configure(command=lambda d=doc: edit_doc(d))
+
     doc_block = ctk.CTkFrame(parent)
-    main_button = ctk.CTkButton(doc_block, text=doc.name, anchor='w', command=lambda n="edit": view(n))
+    main_button = ctk.CTkButton(doc_block, text=doc.name, anchor='w', command=view_class)
     flag_button = ctk.CTkButton(doc_block, text="⚑", width=30, text_color="red" if doc.flag else "gray",
                                 command=_toggle_flag)
     checkbox = ctk.CTkCheckBox(doc_block, text="", width=0, command=lambda: doc.checkbox_state(checkbox.get()))
@@ -329,8 +373,6 @@ def doc_block_build(doc, parent):
     main_button.pack(side="left", fill='x', expand=True)
     flag_button.pack(side="right")
     checkbox.pack(side="right")
-
-    return checkbox
 
 def refresh(**filters):
     for child in main_right.winfo_children():
@@ -346,7 +388,7 @@ def refresh(**filters):
 
     def remove():
         for doc in documents:
-            doc.remove()
+            doc.remove_check()
         refresh()
     remove_button_m.configure(command=remove)
 #----------------------------------------------------------------------------------------------------------------------------
@@ -369,8 +411,15 @@ def clear_add_form():
     if desc_entry.get("1.0", "end-1c"):
         desc_entry.delete("1.0", "end")
 
-def fill_add_form():
-
+def fill_add_form(doc):
+    name_entry.insert(0, doc.name)
+    syg_akt_entry.insert(0, doc.syg_akt)
+    doctype_entry.insert(0, doc.doctype or '')
+    date_entry.insert(0, doc.date or '')
+    side1_entry.insert(0, doc.skarzacy or '')
+    side2_entry.insert(0, doc.przeciwny or '')
+    court_entry.insert(0, doc.court or '')
+    desc_entry.insert("1.0", doc.desc or '')
 
 add_right = ctk.CTkScrollableFrame(right_frame, fg_color=bg2)
 ai_switch = ctk.CTkSwitch(add_right, text="auto fill")
