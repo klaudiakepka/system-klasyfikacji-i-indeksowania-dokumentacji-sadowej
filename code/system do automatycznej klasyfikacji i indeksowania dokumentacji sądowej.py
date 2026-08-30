@@ -132,10 +132,13 @@ search_entry.pack(side='right')
 search_button.pack()
 #----------------------------------------------------------------------------------------------------------------------------
 
+def add():
+    Document.add()
+
 add_top = ctk.CTkFrame(top_frame, fg_color=bg1)
 cancel_button_a = ctk.CTkButton(add_top, text="cancel", width=10, command=lambda n="main": view(n))
 add_label = ctk.CTkLabel(add_top, text="Dodaj nowy dokumet", font=("",15), fg_color=bg1)
-add_button = ctk.CTkButton(add_top, text="add", width=10)
+add_button = ctk.CTkButton(add_top, text="add", width=10, command=add)
 add_top.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
 cancel_button_a.pack(side="left")
 add_label.pack(side="left", expand=True)

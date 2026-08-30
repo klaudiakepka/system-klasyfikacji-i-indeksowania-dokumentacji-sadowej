@@ -110,4 +110,19 @@ class Document:
                 conn.commit()
             finally:
                 conn.close()
-            return self.name
+
+    @classmethod
+    def add(cls, name, syg_akt, doctype='', date=None, skarzacy='', przeciwny='', sad='', desc='', attached=0):
+        conn = sqlite3.connect(cls.path)
+        try:
+            cursor = conn.cursor()
+            cursor.execute("SELECT 1 FROM documents WHERE name = ?", (name,))
+            if cursor.fetchone() is not None:
+                return "document exist"
+
+            cursor.execute("INSERT INTO documents (name, syg_akt, type, date, skarzacy, przeciwny, "
+                           "sad, desc, attached) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                           (name, syg_akt, doctype, date, skarzacy, przeciwny, sad, desc, attached))
+            conn.commit()
+        finally:
+            conn.close()
