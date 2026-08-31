@@ -8,17 +8,27 @@ import os
 from Document import Document
 from AutoEntry import AutoEntry
 from DropBox import DropBox
+from OCR import OCR
 from Filler import Filler
+
 ai_filler = Filler()
+ocr_reader = OCR(lang="pol")
 class TkinterDnD_CTk(TkinterDnD.Tk, ctk.CTk):
     def __init__(self, *args, **kwargs):
         ctk.CTk.__init__(self, *args, **kwargs)
         self.TkdndVersion = TkinterDnD._require(self)
 
+def _on_root_click(event):
+    widget = event.widget
+    for date_widget in (start_date_entry, end_date_entry):
+        if widget is not date_widget and date_widget._calendar.winfo_ismapped():
+            date_widget.drop_down()
+    if not isinstance(widget, tk.Entry):
+        root.focus()
 root = TkinterDnD_CTk()
 ctk.set_appearance_mode("Light")
 root.geometry("1000x650+200+100")
-root.bind("<Button-1>", lambda e: None if isinstance(e.widget, tk.Entry) else root.focus())
+root.bind("<Button-1>", _on_root_click)
 root.grid_columnconfigure(1, weight=1)
 root.grid_rowconfigure(1, weight=1)
 
@@ -64,6 +74,7 @@ def view(name):
         main_right.grid_remove()
         main_left.grid_remove()
         edit_top.grid_remove()
+        ai_paste_button.pack(anchor='w', pady=(5, 0))
     elif name == "edit":
         top_frame.grid(column=0, columnspan=2)
         left_frame.grid_remove()
@@ -74,6 +85,7 @@ def view(name):
         main_left.grid_remove()
         add_top.grid_remove()
         add_left.grid_remove()
+        ai_paste_button.pack_forget()
 
 
 
@@ -320,21 +332,42 @@ clear_filters.pack(side="right")
 
 add_left = ctk.CTkFrame(left_frame, fg_color=bg3)
 
-current_file = {"path": None, "ext": ""}
+current_file = {"path": None, "ext": "", "text": None}
 def on_file_drop(files):
     path = files[0]
     filename = os.path.basename(path)
     _, ext = os.path.splitext(filename)
     current_file["path"] = path
     current_file["ext"] = ext
+    current_file["text"] = None
 
-    def fill_name():
+    def show_name():
         name_entry.delete(0, "end")
         name_entry.insert(0, filename)
-    name_entry.after(0, fill_name)
+        error_label.configure(text="")
+    name_entry.after(0, show_name)
+
+    if ext.lower() not in OCR.SUPPORTED:
+        text, message = None, f"nieobsługiwany format pliku: {ext or '(brak rozszerzenia)'}"
+    else:
+        try:
+            text = ocr_reader.extract(path)
+        except Exception as e:
+            text, message = None, f"błąd OCR: {e}"
+        else:
+            message = "" if text and text.strip() else "nie udało się odczytać tekstu z pliku"
+
+    def apply_result():
+        if current_file["path"] != path:
+            return
+        current_file["text"] = text
+        error_label.configure(text=message)
+
+    name_entry.after(0, apply_result)
 
 drop_box_frame = ctk.CTkFrame(add_left, fg_color=bg3)
 drop_box = DropBox(drop_box_frame, on_drop=on_file_drop)
+drop_box.on_error = lambda e: error_label.configure(text=f"nieoczekiwany błąd: {e}")
 drop_box_frame.pack(expand=True)
 drop_box.pack(padx=20)
 add_left.grid(row=0, column=0, sticky="nesw")
@@ -471,22 +504,16 @@ def ai_fill_from_text(text):
         desc_entry.delete("1.0", "end")
         desc_entry.insert("1.0", data["desc"])
 
-def open_ai_text_dialog():
-    dialog = ctk.CTkToplevel(root)
-    dialog.title("Wklej tekst")
-    dialog.geometry("400x300")
-    text_box = ctk.CTkTextbox(dialog)
-    text_box.pack(expand=True, fill="both", padx=10, pady=10)
-
-    def submit():
-        content = text_box.get("1.0", "end-1c")
-        dialog.destroy()
-        ai_fill_from_text(content)
-
-    ctk.CTkButton(dialog, text="uzupełnij", command=submit).pack(pady=(0, 10))
+def fill_from_ocr_text():
+    text = current_file.get("text")
+    if not text or not text.strip():
+        error_label.configure(text="upuść plik i poczekaj na zakończenie odczytu")
+        return
+    ai_fill_from_text(text)
+    error_label.configure(text="")
 
 add_right = ctk.CTkScrollableFrame(right_frame, fg_color=bg2)
-ai_paste_button = ctk.CTkButton(add_right, text="wklej tekst", width=30, command=open_ai_text_dialog)
+ai_paste_button = ctk.CTkButton(add_right, text="uzupełnij z OCR", width=30, command=fill_from_ocr_text)
 name_label = ctk.CTkLabel(add_right, text="nazwa", fg_color=bg2)
 name_entry = ctk.CTkEntry(add_right)
 syg_akt_label = ctk.CTkLabel(add_right, text="sygnatura akt", fg_color=bg2)
