@@ -150,6 +150,25 @@ def add():
     if not name or not syg_akt:
         error_label.configure(text="nie wprowadzono nazwy lub sygnatury akt")
         return False
+
+    path = current_file["path"]
+    if path:
+        ext = current_file["ext"]
+        if not name.lower().endswith(ext.lower()):
+            name += ext
+
+        new_path = os.path.join(os.path.dirname(path), name)
+        if os.path.normcase(new_path) != os.path.normcase(path):
+            if os.path.exists(new_path):
+                error_label.configure(text="plik o takiej nazwie już istnieje")
+                return False
+            try:
+                os.rename(path, new_path)
+            except OSError as e:
+                error_label.configure(text=f"nie udało się zmienić nazwy pliku: {e}")
+                return False
+            current_file["path"] = new_path
+
     data = {"name": name, "syg_akt": syg_akt}
     if doctype:
         data.update({"doctype": doctype})
@@ -300,24 +319,21 @@ clear_filters.pack(side="right")
 
 add_left = ctk.CTkFrame(left_frame, fg_color=bg3)
 
-def process_file(path: Path):
-    text = path.read_text(encoding="utf-8")
-    result = do_something(text)
+current_file = {"path": None, "ext": ""}
+def on_file_drop(files):
+    path = files[0]
+    filename = os.path.basename(path)
+    _, ext = os.path.splitext(filename)
+    current_file["path"] = path
+    current_file["ext"] = ext
 
-    fd, tmp_path = tempfile.mkstemp(dir=path.parent, suffix=path.suffix)
-    try:
-        with os.fdopen(fd, "w", encoding="utf-8") as f:
-            f.write(result)
-        os.replace(tmp_path, path)
-    except Exception:
-        os.remove(tmp_path)
-        raise
-
-def add_doc(filepaths):
-    return
+    def fill_name():
+        name_entry.delete(0, "end")
+        name_entry.insert(0, filename)
+    name_entry.after(0, fill_name)
 
 drop_box_frame = ctk.CTkFrame(add_left, fg_color=bg3)
-drop_box = DropBox(drop_box_frame, on_drop=add_doc)
+drop_box = DropBox(drop_box_frame, on_drop=on_file_drop)
 drop_box_frame.pack(expand=True)
 drop_box.pack(padx=20)
 add_left.grid(row=0, column=0, sticky="nesw")
@@ -426,6 +442,8 @@ def clear_add_form():
         court_entry.delete(0, "end")
     if desc_entry.get("1.0", "end-1c"):
         desc_entry.delete("1.0", "end")
+    current_file["path"] = None
+    current_file["ext"] = ""
 
 def fill_add_form(doc):
     name_entry.insert(0, doc.name)
