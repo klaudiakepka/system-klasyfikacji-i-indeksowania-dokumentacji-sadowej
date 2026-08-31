@@ -5,11 +5,11 @@ import customtkinter as ctk
 from tkinterdnd2 import TkinterDnD, DND_FILES
 from datetime import datetime
 import os
-import tempfile
-from pathlib import Path
 from Document import Document
 from AutoEntry import AutoEntry
 from DropBox import DropBox
+from AIFiller import AIFiller
+ai_filler = AIFiller()
 class TkinterDnD_CTk(TkinterDnD.Tk, ctk.CTk):
     def __init__(self, *args, **kwargs):
         ctk.CTk.__init__(self, *args, **kwargs)
