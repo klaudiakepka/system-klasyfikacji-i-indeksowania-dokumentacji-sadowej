@@ -150,6 +150,7 @@ def add():
     if not name or not syg_akt:
         error_label.configure(text="nie wprowadzono nazwy lub sygnatury akt")
         return False
+    data = {"name": name, "syg_akt": syg_akt}
 
     path = current_file["path"]
     if path:
@@ -168,8 +169,8 @@ def add():
                 error_label.configure(text=f"nie udało się zmienić nazwy pliku: {e}")
                 return False
             current_file["path"] = new_path
+    data.update({"attached": 1})
 
-    data = {"name": name, "syg_akt": syg_akt}
     if doctype:
         data.update({"doctype": doctype})
     if date:
@@ -421,7 +422,7 @@ def refresh(**filters):
     def remove():
         for doc in documents:
             doc.remove_check()
-        refresh()
+        refresh(**filters)
     remove_button_m.configure(command=remove)
 #----------------------------------------------------------------------------------------------------------------------------
 
