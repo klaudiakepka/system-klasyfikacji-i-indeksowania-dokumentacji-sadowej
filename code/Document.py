@@ -57,6 +57,11 @@ class Document:
 
         conn = sqlite3.connect(cls.path)
         try:
+            conn.execute("""CREATE TABLE IF NOT EXISTS documents ("name" VARCHAR(255) NOT NULL PRIMARY KEY, 
+            "syg_akt" VARCHAR(100) NOT NULL, "type" VARCHAR(50), "date" DATE,"skarzacy" VARCHAR(255), 
+            "przeciwny" VARCHAR(255), "sad" VARCHAR(255), "desc" TEXT, "attached" BOOLEAN NOT NULL DEFAULT 0, 
+            "flag" BOOLEAN NOT NULL DEFAULT 0)""")
+            conn.commit()
             rows = conn.execute(query, params).fetchall()
         finally:
             conn.close()
@@ -132,7 +137,7 @@ class Document:
         finally:
             conn.close()
 
-    def change(self, name, syg_akt, doctype='', date='', skarzacy='', przeciwny='', court='', desc=''):
+    def change(self, name, syg_akt, doctype='', date='', skarzacy='', przeciwny='', court='', desc='', attached=0):
         conn = sqlite3.connect(Document.path)
         try:
             cursor = conn.cursor()
@@ -175,6 +180,10 @@ class Document:
                 changes.append("desc = ?")
                 params.append(desc)
                 self.desc = desc
+            if attached == 1 and attached != self.attached:
+                changes.append("attached = ?")
+                params.append(attached)
+                self.attached = attached
             params.append(old_name)
 
             cursor.execute(f"UPDATE documents SET {', '.join(changes)} WHERE name = ?", params)

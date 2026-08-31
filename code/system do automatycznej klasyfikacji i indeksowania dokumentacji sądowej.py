@@ -43,6 +43,7 @@ left_frame.grid_columnconfigure(0, weight=1)
 def view(name):
     if name == "main":
         top_frame.grid(column=1, columnspan=1)
+        left_frame.grid()
         main_top.grid()
         main_right.grid()
         main_left.grid()
@@ -50,12 +51,12 @@ def view(name):
         add_right.grid_remove()
         add_left.grid_remove()
         edit_top.grid_remove()
-        edit_left.grid_remove()
         error_label.configure(text="")
         clear_add_form()
         refresh()
     elif name == "add":
         top_frame.grid(column=0, columnspan=2)
+        left_frame.grid()
         add_top.grid()
         add_right.grid()
         add_left.grid()
@@ -63,12 +64,11 @@ def view(name):
         main_right.grid_remove()
         main_left.grid_remove()
         edit_top.grid_remove()
-        edit_left.grid_remove()
     elif name == "edit":
         top_frame.grid(column=0, columnspan=2)
+        left_frame.grid_remove()
         edit_top.grid()
         add_right.grid()
-        edit_left.grid()
         main_top.grid_remove()
         main_right.grid_remove()
         main_left.grid_remove()
@@ -338,10 +338,6 @@ drop_box = DropBox(drop_box_frame, on_drop=on_file_drop)
 drop_box_frame.pack(expand=True)
 drop_box.pack(padx=20)
 add_left.grid(row=0, column=0, sticky="nesw")
-#----------------------------------------------------------------------------------------------------------------------------
-
-edit_left = ctk.CTkFrame(left_frame, fg_color=bg3, width=400)
-edit_left.grid(row=0, column=0, sticky="nesw")
 #----------------------------------------------------------------------------------------------------------------------------
 
 
