@@ -186,8 +186,9 @@ class Document:
                 self.attached = attached
             params.append(old_name)
 
-            cursor.execute(f"UPDATE documents SET {', '.join(changes)} WHERE name = ?", params)
-            conn.commit()
+            if changes:
+                cursor.execute(f"UPDATE documents SET {', '.join(changes)} WHERE name = ?", params)
+                conn.commit()
         finally:
             conn.close()
         return ""

@@ -8,8 +8,8 @@ import os
 from Document import Document
 from AutoEntry import AutoEntry
 from DropBox import DropBox
-from AIFiller import AIFiller
-ai_filler = AIFiller()
+from Filler import Filler
+ai_filler = Filler()
 class TkinterDnD_CTk(TkinterDnD.Tk, ctk.CTk):
     def __init__(self, *args, **kwargs):
         ctk.CTk.__init__(self, *args, **kwargs)
@@ -452,8 +452,41 @@ def fill_add_form(doc):
     court_entry.insert(0, doc.court or '')
     desc_entry.insert("1.0", doc.desc or '')
 
+def ai_fill_from_text(text):
+    data = ai_filler.extract(text)
+    mapping = {
+        "syg_akt": syg_akt_entry,
+        "date": date_entry,
+        "doctype": doctype_entry,
+        "court": court_entry,
+        "side1": side1_entry,
+        "side2": side2_entry,
+    }
+    for key, widget in mapping.items():
+        value = data.get(key)
+        if value:
+            widget.delete(0, "end")
+            widget.insert(0, value)
+    if data.get("desc"):
+        desc_entry.delete("1.0", "end")
+        desc_entry.insert("1.0", data["desc"])
+
+def open_ai_text_dialog():
+    dialog = ctk.CTkToplevel(root)
+    dialog.title("Wklej tekst")
+    dialog.geometry("400x300")
+    text_box = ctk.CTkTextbox(dialog)
+    text_box.pack(expand=True, fill="both", padx=10, pady=10)
+
+    def submit():
+        content = text_box.get("1.0", "end-1c")
+        dialog.destroy()
+        ai_fill_from_text(content)
+
+    ctk.CTkButton(dialog, text="uzupełnij", command=submit).pack(pady=(0, 10))
+
 add_right = ctk.CTkScrollableFrame(right_frame, fg_color=bg2)
-ai_switch = ctk.CTkSwitch(add_right, text="auto fill")
+ai_paste_button = ctk.CTkButton(add_right, text="wklej tekst", width=30, command=open_ai_text_dialog)
 name_label = ctk.CTkLabel(add_right, text="nazwa", fg_color=bg2)
 name_entry = ctk.CTkEntry(add_right)
 syg_akt_label = ctk.CTkLabel(add_right, text="sygnatura akt", fg_color=bg2)
@@ -489,7 +522,7 @@ court_entry.pack(fill='x', pady=(0,5))
 desc_label.pack(anchor='w')
 desc_entry.pack(fill='x', pady=(0,5))
 error_label.pack(fill='x')
-ai_switch.pack(anchor='w')
+ai_paste_button.pack(anchor='w', pady=(5, 0))
 #----------------------------------------------------------------------------------------------------------------------------
 
 

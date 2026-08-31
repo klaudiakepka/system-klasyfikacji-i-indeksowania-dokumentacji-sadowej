@@ -1,7 +1,7 @@
 import re
 from datetime import date
 
-class AIFiller:
+class Filler:
     _MONTHS = {
         "stycznia": 1, "lutego": 2, "marca": 3, "kwietnia": 4,
         "maja": 5, "czerwca": 6, "lipca": 7, "sierpnia": 8,
@@ -23,8 +23,9 @@ class AIFiller:
         "obwinion", "oskarżon", "dłużnik", "obowiązan", "przeciwnik procesowy",
         "interwenient",
     ]
-    _SYG_AKT_RE = re.compile(r"\b([IVXLCM]{1,6}\s?[A-Za][a-zA-Z]{0,3}\s?\d{1,5}/\d{2,4})\b")
-    _DATE_ISO_RE = re.compile(r"\b(\d{4})-(\d{1,2})-(\d{1,2})\b")
+    _SYG_AKT = re.compile(r"\b([IVXLCM]{1,6}\s?[A-Za][a-zA-Z]{0,3}\s?\d{1,5}/\d{2,4})\b")
+    _DATE_ISO = re.compile(r"\b(\d{4})-(\d{1,2})-(\d{1,2})\b")
+    _DATE_DOTS = re.compile(r"\b(\d{1,2})\.(\d{1,2})\.(\d{4})\b")
     _DATE_DASH = re.compile(r"\b(\d{1,2})-(\d{1,2})-(\d{4})\b")
     _DATE_SLASH = re.compile(r"\b(\d{1,2})/(\d{1,2})/(\d{4})\b")
     _COURT_MOD = r"(?:Wojewódzk\w*|Naczeln\w*)"
@@ -33,6 +34,7 @@ class AIFiller:
         r"Prac\w*(?:\s+i\s+Ubezpiecze\w*\s+Społeczny\w*)?|"
         r"Rodzinn\w*(?:\s+i\s+Nieletni\w*)?")
     _LOCATION = r"[A-ZŁŚŻŹĆŃÓĄĘ][\wąćęłńóśźż\-]*(?:\s+[A-ZŁŚŻŹĆŃÓĄĘ][\wąćęłńóśźż\-]*){0,2}"
+
     _COURT_RE = re.compile(rf"(?:{_COURT_MOD}\s+)?"
         rf"Sąd\w*(?:\s+(?:{_COURT_TYPES}))?"
         rf"(?:\s+(?:dla|w)\s+{_LOCATION})?"
@@ -53,6 +55,7 @@ class AIFiller:
     def extract(self, text):
         if not text or not text.strip():
             return {}
+
         side1, side2 = self._find_sides(text)
         court = None
 
@@ -60,11 +63,11 @@ class AIFiller:
             doc = self.nlp(text)
             orgs = [ent.text.strip() for ent in doc.ents if ent.label_ == "ORG"]
             persons = [ent.text.strip() for ent in doc.ents if ent.label_ in ("PERSON", "persName")]
+
             for org in orgs:
                 if "sąd" in org.lower() or "sad" in org.lower():
                     court = org
                     break
-
             if side1 is None and persons:
                 side1 = persons[0]
             if side2 is None:
@@ -72,7 +75,6 @@ class AIFiller:
                     if p != side1:
                         side2 = p
                         break
-
         if court is None:
             court = self._find_court(text)
 
@@ -87,24 +89,26 @@ class AIFiller:
         return {k: v for k, v in result.items() if v}
 
     def _find_syg_akt(self, text):
-        m = self._SYG_AKT_RE.search(text)
+        m = self._SYG_AKT.search(text)
         return m.group(1) if m else None
 
     def _find_date(self, text):
         candidates = []
-        for m in self._DATE_ISO_RE.finditer(text):
+
+        for m in self._DATE_ISO.finditer(text):
             y, mo, d = (int(g) for g in m.groups())
-            self._add_if_valid(candidates, m.start(), y, mo, d)
-        for regex in (self._DATE_DOTS_RE, self._DATE_DASH, self._DATE_SLASH):
+            self._valid(candidates, m.start(), y, mo, d)
+
+        for regex in (self._DATE_DOTS, self._DATE_DASH, self._DATE_SLASH):
             for m in regex.finditer(text):
                 d, mo, y = (int(g) for g in m.groups())
-                self._add_if_valid(candidates, m.start(), y, mo, d)
+                self._valid(candidates, m.start(), y, mo, d)
 
         months_pattern = "|".join(self._MONTHS.keys())
         for m in re.finditer(rf"\b(\d{{1,2}})\s+({months_pattern})\s+(\d{{4}})\b", text, re.IGNORECASE):
             d, month_name, y = m.groups()
             mo = self._MONTHS[month_name.lower()]
-            self._add_if_valid(candidates, m.start(), int(y), mo, int(d))
+            self._valid(candidates, m.start(), int(y), mo, int(d))
 
         if not candidates:
             return None
@@ -112,7 +116,7 @@ class AIFiller:
         return candidates[0][1]
 
     @staticmethod
-    def _add_if_valid(candidates, position, year, month, day):
+    def _valid(candidates, position, year, month, day):
         try:
             date(year, month, day)
         except ValueError:
@@ -133,9 +137,9 @@ class AIFiller:
         )
 
     def _find_keywords(self, text, keywords):
-        for kw in keywords:
+        for key in keywords:
             pattern = (
-                rf"{kw}\w*\s*[:\-]?\s*"
+                rf"{key}\w*\s*[:\-]?\s*"
                 r"([A-ZŁŚŻŹĆŃÓĄĘ][\w\.\-ĄĆĘŁŃÓŚŹŻąćęłńóśźż]*"
                 r"(?:\s+[A-ZŁŚŻŹĆŃÓĄĘ][\w\.\-ĄĆĘŁŃÓŚŹŻąćęłńóśźż]*){0,3})"
             )
