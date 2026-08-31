@@ -34,7 +34,6 @@ class Filler:
         r"Prac\w*(?:\s+i\s+Ubezpiecze\w*\s+Społeczny\w*)?|"
         r"Rodzinn\w*(?:\s+i\s+Nieletni\w*)?")
     _LOCATION = r"[A-ZŁŚŻŹĆŃÓĄĘ][\wąćęłńóśźż\-]*(?:\s+[A-ZŁŚŻŹĆŃÓĄĘ][\wąćęłńóśźż\-]*){0,2}"
-
     _COURT_RE = re.compile(rf"(?:{_COURT_MOD}\s+)?"
         rf"Sąd\w*(?:\s+(?:{_COURT_TYPES}))?"
         rf"(?:\s+(?:dla|w)\s+{_LOCATION})?"

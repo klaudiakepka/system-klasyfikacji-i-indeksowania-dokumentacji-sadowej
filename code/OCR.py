@@ -58,7 +58,6 @@ class OCR:
             pdf.close()
         return "\n".join(parts)
 
-    # -- obrazy ----------------------------------------------------------
     def _read_image(self, path):
         return self._ocr_image(Image.open(path))
 
