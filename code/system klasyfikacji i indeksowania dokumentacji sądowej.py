@@ -18,6 +18,11 @@ class TkinterDnD_CTk(TkinterDnD.Tk, ctk.CTk):
         ctk.CTk.__init__(self, *args, **kwargs)
         self.TkdndVersion = TkinterDnD._require(self)
 
+ctk.ThemeManager.theme["CTkButton"]["text_color"] = "black"
+ctk.set_appearance_mode("Light")
+bg1 = "light steel blue"
+bg2 = "lightgrey"
+
 def _on_root_click(event):
     widget = event.widget
     for date_widget in (start_date_entry, end_date_entry):
@@ -25,21 +30,16 @@ def _on_root_click(event):
             date_widget.drop_down()
     if not isinstance(widget, tk.Entry):
         root.focus()
-root = TkinterDnD_CTk()
-ctk.set_appearance_mode("Light")
+root = TkinterDnD_CTk( fg_color=bg1)
+root.title("System klasyfikacji i indeksowania dokumentacji sądowej")
 root.geometry("1000x650+200+100")
 root.bind("<Button-1>", _on_root_click)
 root.grid_columnconfigure(1, weight=1)
 root.grid_rowconfigure(1, weight=1)
 
-ctk.ThemeManager.theme["CTkButton"]["text_color"] = "black"
-bg1 = "lightpink"
-bg2 = "lightgreen"
-bg3 = "lightblue"
-
 top_frame = ctk.CTkFrame(root, fg_color=bg1)
 right_frame = ctk.CTkFrame(root, fg_color=bg2)
-left_frame = ctk.CTkFrame(root, fg_color=bg3)
+left_frame = ctk.CTkFrame(root, fg_color=bg1)
 top_frame.grid(row=0, column=1, sticky='nsew')
 top_frame.grid_rowconfigure(0, weight=1)
 top_frame.grid_columnconfigure(0, weight=1)
@@ -226,8 +226,8 @@ cancel_button_e.pack(side="left")
 
 
 
-main_left = tk.Canvas(left_frame, highlightthickness=0, bg=bg3)
-filter_frame = ctk.CTkFrame(main_left, fg_color=bg3)
+main_left = tk.Canvas(left_frame, highlightthickness=0, bg=bg1)
+filter_frame = ctk.CTkFrame(main_left, fg_color=bg1)
 main_left.grid(row=0, column=0, sticky="nesw", pady=20, padx=(10, 0))
 main_left.create_window(0, 0, window=filter_frame, anchor="nw")
 filter_frame.bind("<Configure>", lambda e: main_left.config(width=e.width))
@@ -241,11 +241,11 @@ def filter_block(parent, title):
             content.pack(anchor="w", padx=(20,0), pady=(5,0), after=header)
             header.configure(text=f"▼ {title}")
 
-    header = ctk.CTkButton(parent, text=f"▶ {title}", width=200, anchor="w", border_width=0, fg_color=bg3,
-                       hover_color=bg3, command=toggle_visibility)
+    header = ctk.CTkButton(parent, text=f"▶ {title}", width=200, anchor="w", border_width=0, fg_color=bg1,
+                           hover_color=bg1, command=toggle_visibility)
     header.pack()
     ttk.Separator(parent, orient="horizontal").pack(fill='x', padx=10, pady=5)
-    content = ctk.CTkFrame(parent, fg_color=bg3)
+    content = ctk.CTkFrame(parent, fg_color=bg1)
     return content
 
 def toggle(clicked, var, yes_var, no_var):
@@ -263,9 +263,9 @@ def toggle(clicked, var, yes_var, no_var):
 flag_yes_var = ctk.IntVar(value=0)
 flag_no_var = ctk.IntVar(value=0)
 flag_filter = filter_block(filter_frame, "Oznaczone")
-flag_yes = ctk.CTkCheckBox(flag_filter, text="Tak", variable=flag_yes_var, fg_color=bg3,
+flag_yes = ctk.CTkCheckBox(flag_filter, text="Tak", variable=flag_yes_var, fg_color=bg1,
                            command=lambda: toggle("yes", flag_var, flag_yes_var, flag_no_var))
-flag_no = ctk.CTkCheckBox(flag_filter, text="Nie", variable=flag_no_var, fg_color=bg3,
+flag_no = ctk.CTkCheckBox(flag_filter, text="Nie", variable=flag_no_var, fg_color=bg1,
                           command=lambda: toggle("no", flag_var, flag_yes_var, flag_no_var))
 flag_yes.pack()
 flag_no.pack()
@@ -273,10 +273,10 @@ flag_no.pack()
 att_yes_var = ctk.IntVar(value=0)
 att_no_var = ctk.IntVar(value=0)
 att_filter = filter_block(filter_frame, "Zaimportowane")
-att_yes = ctk.CTkCheckBox(att_filter, variable=att_yes_var, text="Tak", fg_color=bg3,
-                        command=lambda: toggle("yes", attached_var, att_yes_var, att_no_var))
-att_no = ctk.CTkCheckBox(att_filter, variable=att_no_var, text="Nie", fg_color=bg3,
-                        command=lambda: toggle("no", attached_var, att_yes_var, att_no_var))
+att_yes = ctk.CTkCheckBox(att_filter, variable=att_yes_var, text="Tak", fg_color=bg1,
+                          command=lambda: toggle("yes", attached_var, att_yes_var, att_no_var))
+att_no = ctk.CTkCheckBox(att_filter, variable=att_no_var, text="Nie", fg_color=bg1,
+                         command=lambda: toggle("no", attached_var, att_yes_var, att_no_var))
 att_yes.pack()
 att_no.pack()
 
@@ -284,14 +284,14 @@ def clear_date():
     start_date_var.set("")
     end_date_var.set("")
 date_filter = filter_block(filter_frame, "Data")
-input_block = ctk.CTkFrame(date_filter, fg_color=bg3)
+input_block = ctk.CTkFrame(date_filter, fg_color=bg1)
 start_date_entry = DateEntry(input_block, font=('Inter', 8), locale='pl_PL', showweeknumbers=False,
                              showothermonthdays=False, state="readonly", textvariable=start_date_var,
                              date_pattern='yyyy-mm-dd')
 end_date_entry = DateEntry(input_block, font=('Helvetica', 8), locale='pl_PL', showweeknumbers=False,
                            showothermonthdays=False, state="readonly", textvariable=end_date_var,
                            date_pattern="yyyy-mm-dd")
-spacing = ctk.CTkLabel(input_block, text='-', fg_color=bg3)
+spacing = ctk.CTkLabel(input_block, text='-', fg_color=bg1)
 clear_button = ctk.CTkButton(date_filter, text="clear", command=clear_date)
 input_block.pack(expand=True)
 start_date_entry.pack(side="left")
@@ -322,7 +322,7 @@ def clear_filters():
     sides_var.set("")
     doctype_var.set("")
     refresh()
-button_frame = ctk.CTkFrame(filter_frame, fg_color=bg3)
+button_frame = ctk.CTkFrame(filter_frame, fg_color=bg1)
 use_filters = ctk.CTkButton(button_frame, text="filter", command=apply_filters, width=30)
 clear_filters = ctk.CTkButton(button_frame, text="clear", command=clear_filters, width=30)
 button_frame.pack(expand=True, fill='x')
@@ -330,7 +330,7 @@ use_filters.pack(side="right", padx=10)
 clear_filters.pack(side="right")
 #----------------------------------------------------------------------------------------------------------------------------
 
-add_left = ctk.CTkFrame(left_frame, fg_color=bg3)
+add_left = ctk.CTkFrame(left_frame, fg_color=bg1)
 
 current_file = {"path": None, "ext": "", "text": None}
 def on_file_drop(files):
@@ -365,7 +365,7 @@ def on_file_drop(files):
 
     name_entry.after(0, apply_result)
 
-drop_box_frame = ctk.CTkFrame(add_left, fg_color=bg3)
+drop_box_frame = ctk.CTkFrame(add_left, fg_color=bg1)
 drop_box = DropBox(drop_box_frame, on_drop=on_file_drop)
 drop_box.on_error = lambda e: error_label.configure(text=f"nieoczekiwany błąd: {e}")
 drop_box_frame.pack(expand=True)
