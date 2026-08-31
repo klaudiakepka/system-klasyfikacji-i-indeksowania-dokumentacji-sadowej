@@ -262,7 +262,7 @@ def toggle(clicked, var, yes_var, no_var):
 
 flag_yes_var = ctk.IntVar(value=0)
 flag_no_var = ctk.IntVar(value=0)
-flag_filter = filter_block(filter_frame, "flag")
+flag_filter = filter_block(filter_frame, "Oznaczone")
 flag_yes = ctk.CTkCheckBox(flag_filter, text="Tak", variable=flag_yes_var, fg_color=bg3,
                            command=lambda: toggle("yes", flag_var, flag_yes_var, flag_no_var))
 flag_no = ctk.CTkCheckBox(flag_filter, text="Nie", variable=flag_no_var, fg_color=bg3,
@@ -272,7 +272,7 @@ flag_no.pack()
 
 att_yes_var = ctk.IntVar(value=0)
 att_no_var = ctk.IntVar(value=0)
-att_filter = filter_block(filter_frame, "attachments")
+att_filter = filter_block(filter_frame, "Zaimportowane")
 att_yes = ctk.CTkCheckBox(att_filter, variable=att_yes_var, text="Tak", fg_color=bg3,
                         command=lambda: toggle("yes", attached_var, att_yes_var, att_no_var))
 att_no = ctk.CTkCheckBox(att_filter, variable=att_no_var, text="Nie", fg_color=bg3,
@@ -283,7 +283,7 @@ att_no.pack()
 def clear_date():
     start_date_var.set("")
     end_date_var.set("")
-date_filter = filter_block(filter_frame, "data")
+date_filter = filter_block(filter_frame, "Data")
 input_block = ctk.CTkFrame(date_filter, fg_color=bg3)
 start_date_entry = DateEntry(input_block, font=('Inter', 8), locale='pl_PL', showweeknumbers=False,
                              showothermonthdays=False, state="readonly", textvariable=start_date_var,
@@ -300,15 +300,15 @@ end_date_entry.pack(side="left")
 clear_button.pack(anchor='w', pady=(5,0), padx=5)
 clear_date()
 
-court_filter = filter_block(filter_frame, "sąd")
+court_filter = filter_block(filter_frame, "Sąd")
 court_search = AutoEntry(court_filter, Document.dist_courts(), textvariable=court_var, font=("", 12))
 court_search.pack()
 
-side_filter = filter_block(filter_frame, "strona sporu")
+side_filter = filter_block(filter_frame, "Strona sporu")
 side_search = AutoEntry(side_filter, Document.dist_sides(), textvariable=sides_var, font=("", 12))
 side_search.pack()
 
-doctype_filter = filter_block(filter_frame, "typ")
+doctype_filter = filter_block(filter_frame, "Typ")
 doctype_search = AutoEntry(doctype_filter, Document.dist_types(), textvariable=doctype_var, font=("", 12))
 doctype_search.pack()
 
