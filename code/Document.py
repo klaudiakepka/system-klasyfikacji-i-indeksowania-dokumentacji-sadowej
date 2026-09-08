@@ -1,9 +1,21 @@
 import sqlite3
+import os
 from datetime import date
 
 class Document:
     col = "name, syg_akt, type, date, skarzacy, przeciwny, sad, desc, attached, flag"
     path = "./data/data.db"
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    _conn = sqlite3.connect(path)
+    try:
+        _conn.execute("""CREATE TABLE IF NOT EXISTS documents ("name" VARCHAR(255) NOT NULL PRIMARY KEY, 
+            "syg_akt" VARCHAR(100) NOT NULL, "type" VARCHAR(50), "date" DATE,"skarzacy" VARCHAR(255), 
+            "przeciwny" VARCHAR(255), "sad" VARCHAR(255), "desc" TEXT, "attached" BOOLEAN NOT NULL DEFAULT 0, 
+            "flag" BOOLEAN NOT NULL DEFAULT 0)""")
+        _conn.commit()
+    finally:
+        _conn.close()
+    del _conn
 
     def __init__(self, row):
         self.name = row[0]
@@ -58,11 +70,6 @@ class Document:
 
         conn = sqlite3.connect(cls.path)
         try:
-            conn.execute("""CREATE TABLE IF NOT EXISTS documents ("name" VARCHAR(255) NOT NULL PRIMARY KEY, 
-            "syg_akt" VARCHAR(100) NOT NULL, "type" VARCHAR(50), "date" DATE,"skarzacy" VARCHAR(255), 
-            "przeciwny" VARCHAR(255), "sad" VARCHAR(255), "desc" TEXT, "attached" BOOLEAN NOT NULL DEFAULT 0, 
-            "flag" BOOLEAN NOT NULL DEFAULT 0)""")
-            conn.commit()
             rows = conn.execute(query, params).fetchall()
         finally:
             conn.close()
