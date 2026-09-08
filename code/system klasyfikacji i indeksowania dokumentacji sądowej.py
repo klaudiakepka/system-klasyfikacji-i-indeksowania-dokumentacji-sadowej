@@ -96,6 +96,7 @@ end_date_var = ctk.StringVar()
 court_var = ctk.StringVar()
 sides_var = ctk.StringVar()
 doctype_var = ctk.StringVar()
+syg_var = ctk.StringVar()
 
 def apply_filters(event = None):
     filters = {}
@@ -128,6 +129,9 @@ def apply_filters(event = None):
     doctype = doctype_var.get().strip()
     if doctype:
         filters["doctype"] = doctype
+    syg = syg_var.get().strip()
+    if syg:
+        filters["syg_akt"] = syg
 
     refresh(**filters)
 
@@ -306,6 +310,10 @@ doctype_filter = filter_block(filter_frame, "Typ")
 doctype_search = AutoEntry(doctype_filter, Document.dist_types(), textvariable=doctype_var, font=("", 12))
 doctype_search.pack()
 
+syg_filter = filter_block(filter_frame, "Sygnatura Akt")
+syg_search = tk.Entry(syg_filter, textvariable=syg_var, font=("", 12))
+syg_search.pack()
+
 def clear_filters():
     toggle("all", flag_var, flag_yes_var, flag_no_var)
     toggle("all", attached_var, att_yes_var, att_no_var)
@@ -314,6 +322,7 @@ def clear_filters():
     court_var.set("")
     sides_var.set("")
     doctype_var.set("")
+    syg_var.set("")
     refresh()
 button_frame = ctk.CTkFrame(filter_frame, fg_color=bg1)
 use_filters = ctk.CTkButton(button_frame, text="filter", command=apply_filters, width=30)
@@ -476,7 +485,7 @@ def fill_add_form(doc):
     desc_entry.insert("1.0", doc.desc or '')
 
 def fill_from_text(text):
-    data = filler.extract(text)
+    data = filler.get_data(text)
     mapping = {
         "syg_akt": syg_akt_entry,
         "date": date_entry,

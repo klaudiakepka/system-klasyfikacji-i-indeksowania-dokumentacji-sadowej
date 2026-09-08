@@ -19,7 +19,8 @@ class Document:
         self.to_remove = False
 
     @classmethod
-    def load(cls, *, flag=None, attached=None, start_date=None, end_date=None, name=None, court=None,side=None, doctype=None):
+    def load(cls, *, flag=None, attached=None, start_date=None, end_date=None, name=None, court=None,
+             side=None, doctype=None, syg_akt=None):
         query = f"SELECT {cls.col} FROM documents WHERE 1=1"
         params = []
 
@@ -50,6 +51,9 @@ class Document:
         if doctype:
             query += " AND type LIKE ?"
             params.append(f"%{doctype}%")
+        if syg_akt:
+            query += " AND syg_akt LIKE ?"
+            params.append(f"%{syg_akt}%")
         query += " ORDER BY date DESC"
 
         conn = sqlite3.connect(cls.path)
