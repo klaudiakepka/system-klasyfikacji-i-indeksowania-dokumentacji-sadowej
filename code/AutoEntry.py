@@ -63,7 +63,6 @@ class AutoEntry(tk.Entry):
         width = self.winfo_width()
         height = min(len(matches), 8) * 20 + 16
         self.popup.geometry(f"{width}x{height}+{x}+{y}")
-
         self.listbox.delete(0, tk.END)
         for item in matches:
             self.listbox.insert(tk.END, item)

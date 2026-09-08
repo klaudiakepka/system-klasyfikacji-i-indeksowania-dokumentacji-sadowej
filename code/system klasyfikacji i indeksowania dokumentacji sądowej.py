@@ -11,7 +11,7 @@ from DropBox import DropBox
 from OCR import OCR
 from Filler import Filler
 
-ai_filler = Filler()
+filler = Filler()
 ocr_reader = OCR(lang="pol")
 class TkinterDnD_CTk(TkinterDnD.Tk, ctk.CTk):
     def __init__(self, *args, **kwargs):
@@ -32,11 +32,11 @@ def _on_root_click(event):
         root.focus()
 root = TkinterDnD_CTk( fg_color=bg1)
 root.title("System klasyfikacji i indeksowania dokumentacji sądowej")
-root.geometry("1000x650+200+100")
+root.geometry("1000x650+100+100")
+root.minsize(700,650)
 root.bind("<Button-1>", _on_root_click)
 root.grid_columnconfigure(1, weight=1)
 root.grid_rowconfigure(1, weight=1)
-
 top_frame = ctk.CTkFrame(root, fg_color=bg1)
 right_frame = ctk.CTkFrame(root, fg_color=bg2)
 left_frame = ctk.CTkFrame(root, fg_color=bg1)
@@ -74,7 +74,7 @@ def view(name):
         main_right.grid_remove()
         main_left.grid_remove()
         edit_top.grid_remove()
-        ai_paste_button.pack(anchor='w', pady=(5, 0))
+        filler_button.pack(anchor='w', pady=(5, 0))
     elif name == "edit":
         top_frame.grid(column=0, columnspan=2)
         left_frame.grid_remove()
@@ -85,11 +85,8 @@ def view(name):
         main_left.grid_remove()
         add_top.grid_remove()
         add_left.grid_remove()
-        ai_paste_button.pack_forget()
+        filler_button.pack_forget()
 
-
-
-#----------------------------------------------------------------------------------------------------------------------------
 
 name_var = ctk.StringVar()
 flag_var = ctk.StringVar(value="all")
@@ -147,7 +144,6 @@ remove_button_m.pack(side='right', padx=(0, 10))
 search_frame.pack(side='left')
 search_entry.pack(side='right')
 search_button.pack()
-#----------------------------------------------------------------------------------------------------------------------------
 
 def add():
     name = name_entry.get().strip()
@@ -212,7 +208,6 @@ add_top.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
 cancel_button_a.pack(side="left")
 add_label.pack(side="left", expand=True)
 add_button.pack(side="right")
-#----------------------------------------------------------------------------------------------------------------------------
 
 edit_top = ctk.CTkFrame(top_frame, fg_color=bg1)
 remove_button_e = ctk.CTkButton(edit_top, text="remove", width=10)
@@ -222,7 +217,6 @@ edit_top.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
 remove_button_e.pack(side="right", padx=(10,0))
 save_button.pack(side="right", padx=(0,10))
 cancel_button_e.pack(side="left")
-#----------------------------------------------------------------------------------------------------------------------------
 
 
 
@@ -312,7 +306,6 @@ doctype_filter = filter_block(filter_frame, "Typ")
 doctype_search = AutoEntry(doctype_filter, Document.dist_types(), textvariable=doctype_var, font=("", 12))
 doctype_search.pack()
 
-
 def clear_filters():
     toggle("all", flag_var, flag_yes_var, flag_no_var)
     toggle("all", attached_var, att_yes_var, att_no_var)
@@ -328,7 +321,6 @@ clear_filters = ctk.CTkButton(button_frame, text="clear", command=clear_filters,
 button_frame.pack(expand=True, fill='x')
 use_filters.pack(side="right", padx=10)
 clear_filters.pack(side="right")
-#----------------------------------------------------------------------------------------------------------------------------
 
 add_left = ctk.CTkFrame(left_frame, fg_color=bg1)
 
@@ -371,7 +363,6 @@ drop_box.on_error = lambda e: error_label.configure(text=f"nieoczekiwany błąd:
 drop_box_frame.pack(expand=True)
 drop_box.pack(padx=20)
 add_left.grid(row=0, column=0, sticky="nesw")
-#----------------------------------------------------------------------------------------------------------------------------
 
 
 
@@ -453,7 +444,6 @@ def refresh(**filters):
             doc.remove_check()
         refresh(**filters)
     remove_button_m.configure(command=remove)
-#----------------------------------------------------------------------------------------------------------------------------
 
 def clear_add_form():
     if name_entry.get():
@@ -485,8 +475,8 @@ def fill_add_form(doc):
     court_entry.insert(0, doc.court or '')
     desc_entry.insert("1.0", doc.desc or '')
 
-def ai_fill_from_text(text):
-    data = ai_filler.extract(text)
+def fill_from_text(text):
+    data = filler.extract(text)
     mapping = {
         "syg_akt": syg_akt_entry,
         "date": date_entry,
@@ -509,11 +499,11 @@ def fill_from_ocr_text():
     if not text or not text.strip():
         error_label.configure(text="upuść plik i poczekaj na zakończenie odczytu")
         return
-    ai_fill_from_text(text)
+    fill_from_text(text)
     error_label.configure(text="")
 
 add_right = ctk.CTkScrollableFrame(right_frame, fg_color=bg2)
-ai_paste_button = ctk.CTkButton(add_right, text="uzupełnij z OCR", width=30, command=fill_from_ocr_text)
+filler_button = ctk.CTkButton(add_right, text="uzupełnij z OCR", width=30, command=fill_from_ocr_text)
 name_label = ctk.CTkLabel(add_right, text="nazwa", fg_color=bg2)
 name_entry = ctk.CTkEntry(add_right)
 syg_akt_label = ctk.CTkLabel(add_right, text="sygnatura akt", fg_color=bg2)
@@ -549,10 +539,7 @@ court_entry.pack(fill='x', pady=(0,5))
 desc_label.pack(anchor='w')
 desc_entry.pack(fill='x', pady=(0,5))
 error_label.pack(fill='x')
-ai_paste_button.pack(anchor='w', pady=(5, 0))
-#----------------------------------------------------------------------------------------------------------------------------
-
-
+filler_button.pack(anchor='w', pady=(5, 0))
 
 view("main")
 refresh()

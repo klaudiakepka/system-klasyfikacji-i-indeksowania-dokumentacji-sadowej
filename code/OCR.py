@@ -40,7 +40,7 @@ class OCR:
     def _read_pdf(self, path):
         if fitz is None:
             raise RuntimeError(
-                "brak biblioteki PyMuPDF - zainstaluj przez: pip install pymupdf"
+                "brak PyMuPDF"
             )
         parts = []
         pdf = fitz.open(path)
@@ -50,7 +50,6 @@ class OCR:
                 if len(native_text) >= self.min_native_chars:
                     parts.append(native_text)
                 else:
-                    # brak warstwy tekstowej -> to skan, rób OCR na obrazie strony
                     pix = page.get_pixmap(dpi=self.dpi)
                     img = Image.open(io.BytesIO(pix.tobytes("png")))
                     parts.append(self._ocr_image(img))

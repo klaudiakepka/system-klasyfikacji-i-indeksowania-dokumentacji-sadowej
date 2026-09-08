@@ -19,8 +19,7 @@ class Document:
         self.to_remove = False
 
     @classmethod
-    def load(cls, *, flag=None, attached=None, start_date=None, end_date=None, name=None, court=None,
-             side=None, doctype=None):
+    def load(cls, *, flag=None, attached=None, start_date=None, end_date=None, name=None, court=None,side=None, doctype=None):
         query = f"SELECT {cls.col} FROM documents WHERE 1=1"
         params = []
 
@@ -30,7 +29,6 @@ class Document:
         if attached is not None:
             query += " AND attached = ?"
             params.append(int(attached))
-
         if start_date and end_date:
             query += " AND date BETWEEN ? AND ?"
             params.extend([start_date, end_date])
@@ -40,7 +38,6 @@ class Document:
         elif end_date:
             query += " AND date <= ?"
             params.append(end_date)
-
         if name:
             query += " AND name LIKE ?"
             params.append(f"%{name}%")
