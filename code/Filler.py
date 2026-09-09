@@ -2,12 +2,12 @@ import re
 from datetime import date
 
 class Filler:
-    _MONTHS = {"stycznia": 1, "lutego": 2, "marca": 3, "kwietnia": 4,"maja": 5, "czerwca": 6,
-               "lipca": 7, "sierpnia": 8,"września": 9, "wrzesnia": 9, "października": 10, "pazdziernika": 10,
-               "listopada": 11, "grudnia": 12,
+    _MONTHS = {"stycznia":1, "lutego":2, "marca":3, "kwietnia":4,"maja":5, "czerwca":6,"lipca":7,
+               "sierpnia":8,"września":9, "wrzesnia":9, "października":10, "pazdziernika":10,
+               "listopada":11, "grudnia":12
     }
     _DOCTYPES = ["odpowiedź na pozew", "skarga kasacyjna", "nakaz zapłaty","pismo procesowe", "postanowienie",
-                 "zażalenie", "apelacja","wniosek", "wezwanie", "skarga", "wyrok", "pozew",
+                 "zażalenie", "apelacja","wniosek", "wezwanie", "skarga", "wyrok", "pozew"
     ]
     _SIDE1_KEY = ["powód", "powodo", "strona powodowa", "skarż", "wnioskodaw","poszkodowan", "wierzyciel",
                   "oskarżyciel", "apelując", "apelu","inicjator postępowania", "składając"
@@ -206,7 +206,8 @@ class Filler:
                 name = m.group(1).strip()
                 if name.endswith("."):
                     last_tok = name.rsplit(None, 1)[-1].lower()
-                    is_abbr = last_tok in self._ABBR_ENDINGS or re.fullmatch(r"[a-ząćęłńóśźż]\.", last_tok)
+                    is_abbr = (last_tok in self._ABBR_ENDINGS or
+                               re.fullmatch(r"[a-ząćęłńóśźż]\.", last_tok))
                     if not is_abbr:
                         name = name[:-1]
                 return name
