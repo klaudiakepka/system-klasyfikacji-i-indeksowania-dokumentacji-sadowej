@@ -2,18 +2,34 @@ import os
 import io
 from PIL import Image
 import pytesseract
+import shutil
+from paths import app_dir
 try:
     import fitz
 except ImportError:
     fitz = None
 
+def _default_tesseract_cmd():
+    bundled = os.path.join(app_dir(), "tesseract", "tesseract.exe")
+    if os.path.isfile(bundled):
+        return bundled
+    classic = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+    if os.path.isfile(classic):
+        return classic
+    on_path = shutil.which("tesseract")
+    if on_path:
+        return on_path
+    return None
+
 class OCR:
     SUPPORTED = (".txt", ".pdf", ".jpg", ".jpeg", ".png")
 
-    def __init__(self, lang="pol", tesseract_cmd=r'C:\Program Files\Tesseract-OCR\tesseract.exe', min_native_chars=20, dpi=300):
+    def __init__(self, lang="pol", tesseract_cmd=None, min_native_chars=20, dpi=300):
         self.lang = lang
         self.min_native_chars = min_native_chars
         self.dpi = dpi
+        if tesseract_cmd is None:
+            tesseract_cmd = _default_tesseract_cmd()
         if tesseract_cmd:
             pytesseract.pytesseract.tesseract_cmd = tesseract_cmd
 
