@@ -1,6 +1,7 @@
 import os
 import io
 from PIL import Image
+import tempfile
 import pytesseract
 import shutil
 from paths import app_dir
@@ -8,6 +9,11 @@ try:
     import fitz
 except ImportError:
     fitz = None
+
+_safe_tmp = os.path.join(app_dir(), "tmp")
+os.makedirs(_safe_tmp, exist_ok=True)
+tempfile.tempdir = _safe_tmp
+
 
 def _default_tesseract_cmd():
     bundled = os.path.join(app_dir(), "tesseract", "tesseract.exe")
